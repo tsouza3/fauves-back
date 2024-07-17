@@ -66,7 +66,7 @@ app.post("/pix", async (req, res) => {
         user_Id = new mongoose.Types.ObjectId(userId);
         event_Id = new mongoose.Types.ObjectId(eventId);
         quantidadeIngressos = quantidadeTickets;
-        ticketId = new mongoose.Types.ObjectId(ticketIdFromFrontend); 
+        ticketId = new mongoose.Types.ObjectId(ticketId); 
 
         console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos, ticketId);
         console.log("Cobrança PIX criada:", cobResponse.data);
@@ -113,7 +113,7 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
             }
 
             const updatedTicket = await Ticket.findByIdAndUpdate(
-                ticketId, // Usando ticketId para encontrar o ticket
+                ticketId, 
                 { $push: { txid: txid } },
                 { new: true }
             );
