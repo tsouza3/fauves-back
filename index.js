@@ -33,10 +33,10 @@ let cobrancaTxid = null;
 let user_Id = null;
 let event_Id = null;
 let quantidadeIngressos = null;
-let ticketId = null; 
+let ticket_Id = null;
 
 app.post("/pix", async (req, res) => {
-    const { price, eventId, userId, quantidadeTickets, ticketId} = req.body;
+    const { price, eventId, userId, quantidadeTickets, ticketId } = req.body;
 
     if (!price || !eventId || !userId || quantidadeTickets === undefined || !ticketId) {
         return res.status(400).json({ error: "Parâmetros obrigatórios não fornecidos" });
@@ -66,7 +66,7 @@ app.post("/pix", async (req, res) => {
         user_Id = new mongoose.Types.ObjectId(userId);
         event_Id = new mongoose.Types.ObjectId(eventId);
         quantidadeIngressos = quantidadeTickets;
-        ticketId = new mongoose.Types.ObjectId(ticketId); 
+        ticket_Id = new mongoose.Types.ObjectId(ticketId);
 
         console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos, ticketId);
         console.log("Cobrança PIX criada:", cobResponse.data);
