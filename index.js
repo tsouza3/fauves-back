@@ -62,8 +62,8 @@ app.post("/pix", async (req, res) => {
         const qrCodeBase64 = qrCodeBuffer.toString("base64");
 
         cobrancaTxid = cobResponse.data.txid;
-        user_Id = mongoose.Types.ObjectId(userId); // Convertendo para ObjectId do Mongoose
-        event_Id = mongoose.Types.ObjectId(eventId); // Convertendo para ObjectId do Mongoose
+        user_Id = new mongoose.Types.ObjectId(userId); // Convertendo para ObjectId do Mongoose
+        event_Id = new mongoose.Types.ObjectId(eventId); // Convertendo para ObjectId do Mongoose
         quantidadeIngressos = quantidadeTickets;
 
         console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos);
