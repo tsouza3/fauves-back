@@ -9,7 +9,7 @@ import axios from "axios";
 import QRCode from "qrcode";
 import User from "./src/models/user.js";
 import Ticket from "./src/models/ticket.js";
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
 const app = express();
 
@@ -33,11 +33,12 @@ let cobrancaTxid = null;
 let user_Id = null;
 let event_Id = null;
 let quantidadeIngressos = null;
+let ticketId = null; 
 
 app.post("/pix", async (req, res) => {
-    const { price, eventId, userId, quantidadeTickets } = req.body;
+    const { price, eventId, userId, quantidadeTickets, ticketId} = req.body;
 
-    if (!price || !eventId || !userId || quantidadeTickets === undefined) {
+    if (!price || !eventId || !userId || quantidadeTickets === undefined || !ticketId) {
         return res.status(400).json({ error: "Parâmetros obrigatórios não fornecidos" });
     }
 
@@ -62,11 +63,12 @@ app.post("/pix", async (req, res) => {
         const qrCodeBase64 = qrCodeBuffer.toString("base64");
 
         cobrancaTxid = cobResponse.data.txid;
-        user_Id = new mongoose.Types.ObjectId(userId); // Convertendo para ObjectId do Mongoose
-        event_Id = new mongoose.Types.ObjectId(eventId); // Convertendo para ObjectId do Mongoose
+        user_Id = new mongoose.Types.ObjectId(userId);
+        event_Id = new mongoose.Types.ObjectId(eventId);
         quantidadeIngressos = quantidadeTickets;
+        ticketId = new mongoose.Types.ObjectId(ticketIdFromFrontend); 
 
-        console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos);
+        console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos, ticketId);
         console.log("Cobrança PIX criada:", cobResponse.data);
 
         res.status(200).json({
@@ -86,7 +88,7 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
 
     try {
         console.log('Recebido webhook com txid:', txid);
-        console.log('Valores atuais de cobrancaTxid, user_Id e event_Id:', cobrancaTxid, user_Id, event_Id, quantidadeIngressos);
+        console.log('Valores atuais de cobrancaTxid, user_Id e event_Id:', cobrancaTxid, user_Id, event_Id, quantidadeIngressos, ticketId);
 
         if (txid === cobrancaTxid) {
             const qrCodes = [];
@@ -110,9 +112,11 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                 return res.status(404).send('Usuário não encontrado');
             }
 
-            const updatedTicket = await Ticket.findOneAndUpdate({ user: user_Id, event: event_Id }, {
-                $push: { txid: txid },
-            }, { new: true });
+            const updatedTicket = await Ticket.findByIdAndUpdate(
+                ticketId, // Usando ticketId para encontrar o ticket
+                { $push: { txid: txid } },
+                { new: true }
+            );
 
             if (!updatedTicket) {
                 console.log('Erro ao atualizar ingresso com txid');
