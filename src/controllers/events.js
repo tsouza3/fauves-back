@@ -1,0 +1,222 @@
+import Evento from "../models/event.js";
+import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+import fs from 'fs';
+import path from 'path'
+
+export const criarEvento = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(403).json({ error: "Token não fornecido" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.id;
+
+    const {
+      nomeEvento,
+      dataInicio,
+      dataTermino,
+      categoria,
+      localDoEvento,
+      emailEvento,
+      selectedCommercialProfileId,
+    } = req.body;
+
+    const novoEvento = new Evento({
+      nomeEvento,
+      dataInicio,
+      dataTermino,
+      categoria,
+      localDoEvento,
+      emailEvento,
+      capaEvento: req.file ? req.file.path : "",
+      user: userId,
+      producaoEvento: selectedCommercialProfileId, 
+    });
+
+    const eventoSalvo = await novoEvento.save();
+
+    res.status(200).json(eventoSalvo);
+  } catch (error) {
+    console.error("Erro ao criar evento:", error);
+    res.status(400).json({ error: "Erro ao criar evento" });
+  }
+};
+
+export const editarEvento = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const {
+      nomeEvento,
+      dataInicio,
+      dataTermino,
+      categoria,
+      localDoEvento,
+      emailEvento,
+    } = req.body;
+
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: "Token não fornecido" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const evento = await Evento.findById(eventId);
+    if (!evento) {
+      return res.status(404).json({ error: "Evento não encontrado" });
+    }
+
+    if (evento.user.toString() !== userId) {
+      return res.status(403).json({ message: "Acesso negado" });
+    }
+
+    evento.nomeEvento = nomeEvento || evento.nomeEvento;
+    evento.dataInicio = dataInicio || evento.dataInicio;
+    evento.dataTermino = dataTermino || evento.dataTermino;
+    evento.categoria = categoria || evento.categoria;
+    evento.localDoEvento = localDoEvento || evento.localDoEvento;
+    evento.emailEvento = emailEvento || evento.emailEvento;
+
+    if (req.file) {
+      evento.capaEvento = req.file.path;
+    }
+
+    const eventoAtualizado = await evento.save();
+
+    res.status(200).json(eventoAtualizado);
+  } catch (error) {
+    console.error("Erro ao editar evento:", error);
+    res.status(400).json({ error: "Erro ao editar evento" });
+  }
+};
+
+export const buscarEventos = async (req, res) => {
+  try {
+    const eventos = await Evento.find();
+
+    const eventosComId = eventos.map((evento) => ({
+      ...evento.toJSON(),
+      id: evento._id.toString(),
+    }));
+
+    res.status(200).json(eventosComId);
+  } catch (error) {
+    res.status(400).json({ error: "Erro ao buscar eventos" });
+  }
+};
+
+export const buscarEventosPorPerfilComercial = async (req, res) => {
+  const { profileId } = req.params;
+
+  try {
+    const eventos = await Evento.find({ producaoEvento: profileId });
+
+    const eventosComId = eventos.map((evento) => ({
+      ...evento.toJSON(),
+      id: evento._id.toString(),
+    }));
+
+    res.status(200).json(eventosComId);
+  } catch (error) {
+    console.error("Erro ao buscar eventos por perfil comercial:", error);
+    res
+      .status(500)
+      .json({ error: "Erro interno ao buscar eventos por perfil comercial" });
+  }
+};
+
+export const deleteEvent = async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: "Token não fornecido" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const evento = await Evento.findById(eventId);
+    if (!evento) {
+      return res.status(404).json({ message: "Evento não encontrado." });
+    }
+
+    if (evento.user.toString() !== userId) {
+      return res.status(403).json({ message: "Acesso negado" });
+    }
+
+    const capaEventoPath = path.resolve(evento.capaEvento);
+
+    await Evento.findByIdAndDelete(eventId);
+
+    fs.unlink(capaEventoPath, (err) => {
+      if (err) {
+        console.error("Erro ao excluir o arquivo de capa:", err);
+      }
+    });
+
+    res.status(200).json({ message: "Evento excluído com sucesso." });
+  } catch (error) {
+    console.error("Erro ao deletar o evento:", error);
+    res.status(500).json({ message: "Erro interno ao deletar o evento." });
+  }
+};
+export const getEventById = async (req, res) => {
+  const { eventId } = req.params;
+
+  try {
+    console.log(`Buscando evento com ID: ${eventId}`);
+    const event = await Evento.findById(eventId).populate("tickets");
+    if (!event) {
+      console.log(`Evento com ID ${eventId} não encontrado`);
+      return res.status(404).json({ message: "Evento não encontrado" });
+    }
+
+    console.log(`Evento encontrado: ${event}`);
+    res.status(200).json(event);
+  } catch (error) {
+    console.error("Erro ao buscar o evento:", error);
+    res.status(500).json({ message: "Erro interno do servidor" });
+  }
+};
+
+export const buscarEventosDoUsuario = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(403).json({ error: "Token não fornecido" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.id;
+
+    if (!mongoose.isValidObjectId(userId)) {
+      return res.status(400).json({ error: "ID de usuário inválido" });
+    }
+
+    const eventos = await Evento.find({ user: userId }).exec();
+
+    if (!eventos || eventos.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Nenhum evento encontrado para este usuário" });
+    }
+
+    const eventosComId = eventos.map((evento) => ({
+      ...evento.toJSON(),
+      id: evento._id.toString(),
+    }));
+
+    res.status(200).json(eventosComId);
+  } catch (error) {
+    console.error("Erro ao buscar eventos do usuário:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
