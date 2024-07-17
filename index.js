@@ -8,6 +8,7 @@ import { GNRequest } from "./src/apis/efibank.js";
 import axios from "axios";
 import QRCode from "qrcode";
 import User from "./src/models/user.js";
+import Ticket from "./src/models/ticket.js"; // Importe o modelo de Ticket aqui
 
 const app = express();
 
@@ -101,13 +102,9 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                 return res.status(500).send('Erro ao gerar QR Codes');
             }
 
+            // Atualiza o usuário com os QR Codes e o txid
             const updatedUser = await User.findByIdAndUpdate(user_Id, {
-                $push: {
-                    QRCode: { $each: qrCodes } 
-                },
-                $set: {
-                    txid: txid
-                }
+                $push: { QRCode: { $each: qrCodes }, txid: txid },
             }, { new: true });
 
             if (!updatedUser) {
@@ -115,8 +112,19 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                 return res.status(404).send('Usuário não encontrado');
             }
 
-            console.log('Usuário atualizado com QR Codes:', updatedUser);
-            console.log('pix pago');
+            // Atualiza o ticket com o txid
+            const updatedTicket = await Ticket.findOneAndUpdate({ user: user_Id, event: event_Id }, {
+                $push: { txid: txid },
+            }, { new: true });
+
+            if (!updatedTicket) {
+                console.log('Erro ao atualizar ingresso com txid');
+                return res.status(404).send('Ingresso não encontrado');
+            }
+
+            console.log('Usuário atualizado com QR Codes e txid:', updatedUser);
+            console.log('Ingresso atualizado com txid:', updatedTicket);
+            console.log('PIX pago');
             res.status(200).send('200');
         } else {
             console.log('Cobrança não encontrada ou pagamento não confirmado');

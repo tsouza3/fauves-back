@@ -10,15 +10,6 @@ const ticketSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Evento",
     },
-    QRCode: {
-      type: String,
-    },
-    
-    txid: {
-      type: String,
-      unique: true,
-    },
-
     nome: {
       type: String,
       required: true,
@@ -37,6 +28,10 @@ const ticketSchema = new mongoose.Schema(
     tipoIngresso: {
       type: String,
     },
+
+    txid: [{
+      type: String,
+  }],
 
     limitePessoa: {
       type: String,

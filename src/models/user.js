@@ -19,11 +19,9 @@ const userSchema = mongoose.Schema(
       type: String
   }],
    
-    txid: {
-      type: String,
-      unique: true,
-    },
-
+  txid: [{
+    type: String,
+}],
     commercialProfiles: [
       { type: mongoose.Schema.Types.ObjectId, ref: "CommercialProfile" },
     ],
