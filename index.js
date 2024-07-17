@@ -29,12 +29,6 @@ app.options("*", cors());
 
 const reqGNAlready = GNRequest();
 
-let cobrancaTxid = null;
-let user_Id = null;
-let event_Id = null;
-let quantidadeIngressos = null;
-let ticket_Id = null;
-
 app.post("/pix", async (req, res) => {
     const { price, eventId, userId, quantidadeTickets, ticketId } = req.body;
 
@@ -62,14 +56,21 @@ app.post("/pix", async (req, res) => {
         const qrCodeBuffer = Buffer.from(qrCodeResponse.data, "binary");
         const qrCodeBase64 = qrCodeBuffer.toString("base64");
 
-        cobrancaTxid = cobResponse.data.txid;
-        user_Id = new mongoose.Types.ObjectId(userId);
-        event_Id = new mongoose.Types.ObjectId(eventId);
-        quantidadeIngressos = quantidadeTickets;
-        ticket_Id = new mongoose.Types.ObjectId(ticketId);
+        const cobrancaTxid = cobResponse.data.txid;
+        const user_Id = new mongoose.Types.ObjectId(userId);
+        const event_Id = new mongoose.Types.ObjectId(eventId);
+        const quantidadeIngressos = quantidadeTickets;
+        const ticket_Id = new mongoose.Types.ObjectId(ticketId);
 
-        console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos, ticketId);
+        console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos, ticket_Id);
         console.log("Cobrança PIX criada:", cobResponse.data);
+
+        // Armazenar os IDs necessários em app.locals para acesso no webhook
+        app.locals.cobrancaTxid = cobrancaTxid;
+        app.locals.user_Id = user_Id;
+        app.locals.event_Id = event_Id;
+        app.locals.quantidadeIngressos = quantidadeIngressos;
+        app.locals.ticket_Id = ticket_Id;
 
         res.status(200).json({
             txid: cobrancaTxid,
@@ -87,8 +88,15 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
     const { txid } = req.body.pix[0];
 
     try {
+        // Recuperar os IDs armazenados em app.locals
+        const cobrancaTxid = app.locals.cobrancaTxid;
+        const user_Id = app.locals.user_Id;
+        const event_Id = app.locals.event_Id;
+        const quantidadeIngressos = app.locals.quantidadeIngressos;
+        const ticket_Id = app.locals.ticket_Id;
+
         console.log('Recebido webhook com txid:', txid);
-        console.log('Valores atuais de cobrancaTxid, user_Id e event_Id:', cobrancaTxid, user_Id, event_Id, quantidadeIngressos, ticketId);
+        console.log('Valores atuais de cobrancaTxid, user_Id e event_Id:', cobrancaTxid, user_Id, event_Id, quantidadeIngressos, ticket_Id);
 
         if (txid === cobrancaTxid) {
             const qrCodes = [];
@@ -113,7 +121,7 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
             }
 
             const updatedTicket = await Ticket.findByIdAndUpdate(
-                ticketId, 
+                ticket_Id, 
                 { $push: { txid: txid } },
                 { new: true }
             );
