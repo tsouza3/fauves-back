@@ -8,7 +8,7 @@ import { GNRequest } from "./src/apis/efibank.js";
 import axios from "axios";
 import QRCode from "qrcode";
 import User from "./src/models/user.js";
-import Ticket from "./src/models/ticket.js"; // Importe o modelo de Ticket aqui
+import Ticket from "./src/models/ticket.js";
 
 const app = express();
 
@@ -61,9 +61,9 @@ app.post("/pix", async (req, res) => {
         const qrCodeBase64 = qrCodeBuffer.toString("base64");
 
         cobrancaTxid = cobResponse.data.txid;
-        user_Id = userId;
-        event_Id = eventId;
-        quantidadeIngressos = quantidadeTickets; 
+        user_Id = mongoose.Types.ObjectId(userId); // Convertendo para ObjectId do Mongoose
+        event_Id = mongoose.Types.ObjectId(eventId); // Convertendo para ObjectId do Mongoose
+        quantidadeIngressos = quantidadeTickets;
 
         console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos);
         console.log("Cobrança PIX criada:", cobResponse.data);
@@ -80,13 +80,11 @@ app.post("/pix", async (req, res) => {
     }
 });
 
-
 app.post('/paymentwebhook(/pix)?', async (req, res) => {
     const { txid } = req.body.pix[0];
 
     try {
         console.log('Recebido webhook com txid:', txid);
-
         console.log('Valores atuais de cobrancaTxid, user_Id e event_Id:', cobrancaTxid, user_Id, event_Id, quantidadeIngressos);
 
         if (txid === cobrancaTxid) {
@@ -102,7 +100,6 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                 return res.status(500).send('Erro ao gerar QR Codes');
             }
 
-            // Atualiza o usuário com os QR Codes e o txid
             const updatedUser = await User.findByIdAndUpdate(user_Id, {
                 $push: { QRCode: { $each: qrCodes }, txid: txid },
             }, { new: true });
@@ -112,7 +109,6 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                 return res.status(404).send('Usuário não encontrado');
             }
 
-            // Atualiza o ticket com o txid
             const updatedTicket = await Ticket.findOneAndUpdate({ user: user_Id, event: event_Id }, {
                 $push: { txid: txid },
             }, { new: true });
