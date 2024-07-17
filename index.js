@@ -9,6 +9,7 @@ import axios from "axios";
 import QRCode from "qrcode";
 import User from "./src/models/user.js";
 import Ticket from "./src/models/ticket.js";
+import mongoose from 'mongoose'
 
 const app = express();
 
