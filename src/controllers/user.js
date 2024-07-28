@@ -120,9 +120,12 @@ export async function getProfileData(req, res) {
   try {
     const userId = req.user._id;
 
+    console.log("User ID:", userId);  // Adicione este log para verificar o ID do usuário
+
     const user = await User.findById(userId);
 
     if (!user) {
+      console.log("Usuário não encontrado");  // Adicione este log para verificar se o usuário foi encontrado
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
@@ -146,12 +149,15 @@ export async function getProfileData(req, res) {
       })),
     };
 
+    console.log("Profile Data:", profileData);  
+
     res.json(profileData);
   } catch (error) {
     console.error("Erro ao buscar os dados do perfil:", error);
     res.status(500).json({ error: "Erro ao buscar os dados do perfil" });
   }
 }
+
 
 export async function createProductorProfile(req, res) {
   try {
