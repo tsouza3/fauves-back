@@ -131,6 +131,7 @@ export async function getProfileData(req, res) {
     const profileData = {
       name: user.name,
       userId: userId,
+      QRCode: user.QRCode,
       commercialProfiles: commercialProfiles.map((profile) => ({
         _id: profile._id,
         nomeEmpresa: profile.nomeEmpresa,
@@ -145,10 +146,10 @@ export async function getProfileData(req, res) {
       })),
     };
 
-    res.status(200).json(profileData);
+    res.json(profileData);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao obter o perfil do usuário" });
+    console.error("Erro ao buscar os dados do perfil:", error);
+    res.status(500).json({ error: "Erro ao buscar os dados do perfil" });
   }
 }
 
