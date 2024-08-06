@@ -8,6 +8,7 @@ import {
   getProfileData,
   createProductorProfile,
   getProfileDataByUser,
+  updateUserPermission,
 } from "../controllers/user.js";
 import {
   criarEvento,
@@ -41,41 +42,70 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// Rotas de perfil do produtor
 router.post(
   "/productorprofile",
-  protect,
+  protect('user'), // Permissão para criar perfil de produtor
   upload.single("profilePhoto"),
-  createProductorProfile,
+  createProductorProfile
 );
 
+// Rotas de autenticação
 router.post("/register", create);
-
 router.post("/login", login);
 
-router.put("/:id", protect, update);
+// Rotas de perfil
+router.put("/:id", protect('user'), update); // Permissão para atualizar perfil
+router.get("/profile", protect('user'), getProfileData); // Permissão para acessar perfil
 
-router.get("/profile", protect, getProfileData);
+// Rotas de evento
+router.post(
+  "/eventos",
+  protect('user'), // Permissão para criar eventos
+  upload.single("capaEvento"),
+  criarEvento
+);
 
-router.post("/eventos", protect, upload.single("capaEvento"), criarEvento);
+router.get("/eventos", protect('user'), buscarEventos); // Permissão para listar eventos
+router.get("/eventos/:profileId", protect('user'), buscarEventosPorPerfilComercial);
 
-router.get("/eventos", protect, buscarEventos);
-router.get("/eventos/:profileId", protect, buscarEventosPorPerfilComercial);
+router.put(
+  "/eventos/:eventId",
+  protect('admin'), // Permissão para editar eventos
+  editarEvento
+);
 
-router.put("/eventos/:eventId", protect, editarEvento);
+router.get("/event/:eventId", protect('user'), getEventById);
 
-router.get("/event/:eventId", protect, getEventById);
+router.delete(
+  "/event/:eventId",
+  protect('admin'), // Permissão para deletar eventos
+  deleteEvent
+);
 
-router.delete("/event/:eventId", protect, deleteEvent);
+router.post(
+  "/events/:eventId/tickets",
+  protect('admin'), // Permissão para criar tickets
+  createTicket
+);
 
-router.post("/events/:eventId/tickets", protect, createTicket);
+router.delete(
+  "/events/:eventId/tickets/:ticketId",
+  protect('admin'), // Permissão para deletar tickets
+  deleteTicket
+);
 
-router.delete("/events/:eventId/tickets/:ticketId", protect, deleteTicket);
+router.put(
+  "/events/:eventId/tickets/:ticketId",
+  protect('admin'), // Permissão para atualizar tickets
+  updateTicket
+);
 
-router.put("/events/:eventId/tickets/:ticketId", protect, updateTicket);
+router.get("/events", protect('user'), buscarEventosDoUsuario);
+router.get("/profile/:profileId", protect('user'), getProfileDataByUser);
 
-router.get("/events", protect, buscarEventosDoUsuario);
-
-router.get("/profile/:profileId", protect, getProfileDataByUser);
+// Rota para atualizar a categoria de permissão do usuário
+router.put("/update-permission", protect('admin'), updateUserPermission);
 
 router.use("/uploads", express.static(path.resolve("uploads")));
 
