@@ -14,71 +14,51 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
     },
-
     QRCode: [{
       type: String
-  }],
-   
-  txid: [{
-    type: String,
-}],
+    }],
+    txid: [{
+      type: String,
+    }],
     commercialProfiles: [
       { type: mongoose.Schema.Types.ObjectId, ref: "CommercialProfile" },
     ],
-  },
-  {
-    timestamps: true,
-  },
-  {
+    permissionCategory: {
+      type: String,
+      enum: ['admin', 'observer', 'seller', 'checkin'],
+      default: 'observer',
+    },
     cpf: {
       type: String,
     },
-  },
-  {
-    
-  },
- 
-  {
     celular: {
       type: String,
     },
-  },
-  {
     dataNascimento: {
       type: String,
     },
-  },
-  {
     cep: {
       type: String,
     },
-  },
-  {
     logradouro: {
       type: String,
     },
-  },
-
-  {
     bairro: {
       type: String,
     },
-  },
-  {
     cidade: {
       type: String,
     },
-  },
-  {
     uf: {
       type: String,
     },
-  },
-  {
     numero: {
       type: Number,
     },
   },
+  {
+    timestamps: true,
+  }
 );
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
