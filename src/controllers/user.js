@@ -234,3 +234,29 @@ export async function updateUser(req, res) {
   const userId = req.params.id;
   const { nome } = req.body;
 }
+
+export async function updateUserPermission(req, res) => {
+  const { email, permissionCategory } = req.body;
+
+  if (!email || !permissionCategory) {
+    return res.status(400).json("Email e categoria de permissão são obrigatórios.");
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json("Usuário não encontrado.");
+    }
+
+    user.permissionCategory = permissionCategory;
+    await user.save();
+
+    res.status(200).json({ message: "Categoria de permissão atualizada com sucesso." });
+  } catch (error) {
+    console.error("Erro ao atualizar a categoria de permissão:", error);
+    res.status(500).json("Erro ao atualizar a categoria de permissão.");
+  }
+};
+
+
