@@ -102,7 +102,8 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
             const qrCodes = [];
             try {
                 for (let j = 0; j < quantidadeIngressos; j++) {
-                    const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user_Id}`);
+                    const uniqueTicketId = new mongoose.Types.ObjectId(); // Gerar um ID único para cada ingresso
+                    const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user_Id}/${uniqueTicketId}`);
                     qrCodes.push(qrCodeData);
                     console.log('QR Code gerado com sucesso para ingresso:', j + 1);
                 }
