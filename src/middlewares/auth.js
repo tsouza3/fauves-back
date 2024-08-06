@@ -1,6 +1,16 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
+const getPermissionLevel = (permission) => {
+  const levels = {
+    observer: 1,
+    user: 2,
+    seller: 3,
+    admin: 4,
+  };
+  return levels[permission] || 0; // Retorna 0 se a permissão não for encontrada
+};
+
 const protect = (requiredPermission) => async (req, res, next) => {
   let token;
 
@@ -15,7 +25,10 @@ const protect = (requiredPermission) => async (req, res, next) => {
         return res.status(401).json("Usuário não encontrado, não autorizado.");
       }
 
-      if (requiredPermission && req.user.permissionCategory !== requiredPermission) {
+      const userPermissionLevel = getPermissionLevel(req.user.permissionCategory);
+      const requiredPermissionLevel = getPermissionLevel(requiredPermission);
+
+      if (userPermissionLevel < requiredPermissionLevel) {
         return res.status(403).json("Acesso negado, permissões insuficientes.");
       }
 
