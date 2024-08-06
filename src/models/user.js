@@ -25,8 +25,8 @@ const userSchema = mongoose.Schema(
     ],
     permissionCategory: {
   type: String,
-  enum: ['admin', 'observer', 'seller', 'checkin', 'comum'],
-  default: 'comum',
+  enum: ['admin', 'observer', 'seller', 'checkin', 'user'],
+  default: 'user',
 }
     cpf: {
       type: String,
