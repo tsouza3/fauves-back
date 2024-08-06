@@ -24,10 +24,10 @@ const userSchema = mongoose.Schema(
       { type: mongoose.Schema.Types.ObjectId, ref: "CommercialProfile" },
     ],
     permissionCategory: {
-      type: String,
-      enum: ['admin', 'observer', 'seller', 'checkin'],
-      default: 'observer',
-    },
+  type: String,
+  enum: ['admin', 'observer', 'seller', 'checkin', 'comum'],
+  default: 'comum',
+}
     cpf: {
       type: String,
     },
