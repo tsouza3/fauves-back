@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import fs from 'fs';
 import path from 'path'
-
 export const criarEvento = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -34,7 +33,8 @@ export const criarEvento = async (req, res) => {
       emailEvento,
       capaEvento: req.file ? req.file.path : "",
       user: userId,
-      producaoEvento: selectedCommercialProfileId, 
+      producaoEvento: selectedCommercialProfileId,
+      members: [{ user: userId, role: 'admin' }]  // Adiciona o criador como admin
     });
 
     const eventoSalvo = await novoEvento.save();
@@ -45,6 +45,7 @@ export const criarEvento = async (req, res) => {
     res.status(400).json({ error: "Erro ao criar evento" });
   }
 };
+
 
 export const editarEvento = async (req, res) => {
   try {
