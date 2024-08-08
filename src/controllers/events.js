@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import fs from 'fs';
 import path from 'path'
+
 export const criarEvento = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
