@@ -235,7 +235,7 @@ export async function updateUser(req, res) {
   const { nome } = req.body;
 }
 
-export async function updateUserPermission(req, res) => {
+export async function updateUserPermission(req, res) {
   const { email, permissionCategory } = req.body;
 
   if (!email || !permissionCategory) {
