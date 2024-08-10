@@ -1,85 +1,24 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-const userSchema = mongoose.Schema(
-  {
-    name: {
-      type: String,
-    },
-    email: {
-      type: String,
-      unique: true,
-      match: /.+\@.+\..+/,
-    },
-    password: {
-      type: String,
-    },
-
-    QRCode: [{
-      type: String
-  }],
-   
-  txid: [{
-    type: String,
-}],
-    commercialProfiles: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "CommercialProfile" },
-    ],
-  },
-  {
-    timestamps: true,
-  },
-  {
-    cpf: {
-      type: String,
-    },
-  },
-  {
-    
-  },
- 
-  {
-    celular: {
-      type: String,
-    },
-  },
-  {
-    dataNascimento: {
-      type: String,
-    },
-  },
-  {
-    cep: {
-      type: String,
-    },
-  },
-  {
-    logradouro: {
-      type: String,
-    },
-  },
-
-  {
-    bairro: {
-      type: String,
-    },
-  },
-  {
-    cidade: {
-      type: String,
-    },
-  },
-  {
-    uf: {
-      type: String,
-    },
-  },
-  {
-    numero: {
-      type: Number,
-    },
-  },
-);
+const userSchema = mongoose.Schema({
+  name: { type: String },
+  email: { type: String, unique: true, match: /.+\@.+\..+/ },
+  password: { type: String },
+  QRCode: [{ type: String }],
+  txid: [{ type: String }],
+  commercialProfiles: [{ type: mongoose.Schema.Types.ObjectId, ref: "CommercialProfile" }],
+  permissionCategory: { type: String, enum: ['user', 'observer', 'seller', 'admin'], default: 'user' }, // Adicionado para consistência
+  cpf: { type: String },
+  celular: { type: String },
+  dataNascimento: { type: String },
+  cep: { type: String },
+  logradouro: { type: String },
+  bairro: { type: String },
+  cidade: { type: String },
+  uf: { type: String },
+  numero: { type: Number },
+}, { timestamps: true });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
