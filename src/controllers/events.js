@@ -35,7 +35,7 @@ export const criarEvento = async (req, res) => {
       capaEvento: req.file ? req.file.path : "",
       user: userId,
       producaoEvento: selectedCommercialProfileId,
-      members: [{ user: userId, role: 'admin' }]  // Adiciona o criador como admin
+      permissionCategory: [{ user: userId, role: 'admin' }]  // Adiciona o criador como admin
     });
 
     const eventoSalvo = await novoEvento.save();
