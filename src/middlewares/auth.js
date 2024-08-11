@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
-import Evento from "../models/evento.js";
+import Evento from "../models/event.js";
 
 const getPermissionLevel = (permission) => {
   const levels = {
