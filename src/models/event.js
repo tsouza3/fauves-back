@@ -8,18 +8,31 @@ const eventoSchema = new mongoose.Schema({
   localDoEvento: String,
   producaoEvento: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "CommercialProfile", 
+    ref: "CommercialProfile",
   },
   emailEvento: String,
   capaEvento: String,
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "user", 
+    ref: "User",
   },
   tickets: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Ticket",
+    },
+  ],
+  permissionCategory: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      role: {
+        type: String,
+        enum: ['user', 'observer', 'seller', 'admin'],
+        default: 'user',
+      },
     },
   ],
 });
