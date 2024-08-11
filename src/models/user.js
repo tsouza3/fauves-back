@@ -8,7 +8,17 @@ const userSchema = mongoose.Schema({
   QRCode: [{ type: String }],
   txid: [{ type: String }],
   commercialProfiles: [{ type: mongoose.Schema.Types.ObjectId, ref: "CommercialProfile" }],
-  permissionCategory: { type: String, enum: ['user', 'observer', 'seller', 'admin'], default: 'user' }, // Adicionado para consistência
+  permissionCategory: [{ 
+    eventId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Evento",
+    },
+    role: {
+      type: String,
+      enum: ['user', 'observer', 'seller', 'admin'],
+      default: 'user',
+    }
+  }],
   cpf: { type: String },
   celular: { type: String },
   dataNascimento: { type: String },
