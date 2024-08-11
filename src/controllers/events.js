@@ -1,4 +1,6 @@
 import Evento from "../models/event.js";
+import User from "../models/user.js";
+
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import fs from 'fs';
