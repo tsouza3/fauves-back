@@ -4,6 +4,10 @@ import mongoose from "mongoose";
 import fs from 'fs';
 import path from 'path'
 
+import jwt from "jsonwebtoken";
+import User from "../models/user.js";
+import Evento from "../models/event.js";
+
 export const criarEvento = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -12,14 +16,7 @@ export const criarEvento = async (req, res) => {
     }
 
     const token = authHeader.split(" ")[1];
-    let decodedToken;
-    
-    try {
-      decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      return res.status(401).json({ error: "Token inválido ou expirado" });
-    }
-    
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decodedToken.id;
 
     const {
@@ -32,6 +29,7 @@ export const criarEvento = async (req, res) => {
       selectedCommercialProfileId,
     } = req.body;
 
+    // Criação do evento
     const novoEvento = new Evento({
       nomeEvento,
       dataInicio,
@@ -47,10 +45,23 @@ export const criarEvento = async (req, res) => {
 
     const eventoSalvo = await novoEvento.save();
 
-    res.status(201).json(eventoSalvo);
+    // Atualização do modelo User para adicionar o evento na permissionCategory
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          permissionCategory: {
+            eventId: eventoSalvo._id,
+            role: 'admin'
+          }
+        }
+      }
+    );
+
+    res.status(200).json(eventoSalvo);
   } catch (error) {
     console.error("Erro ao criar evento:", error);
-    res.status(500).json({ error: "Erro ao criar evento" });
+    res.status(400).json({ error: "Erro ao criar evento" });
   }
 };
 
