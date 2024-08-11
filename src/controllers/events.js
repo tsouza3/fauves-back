@@ -4,10 +4,6 @@ import mongoose from "mongoose";
 import fs from 'fs';
 import path from 'path'
 
-import jwt from "jsonwebtoken";
-import User from "../models/user.js";
-import Evento from "../models/event.js";
-
 export const criarEvento = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
