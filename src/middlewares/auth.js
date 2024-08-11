@@ -26,28 +26,31 @@ const protect = (requiredPermission) => async (req, res, next) => {
         return res.status(401).json({ message: "Usuário não encontrado, não autorizado." });
       }
 
-      // Verifica se o usuário é staff do evento específico
-      const eventId = req.params.eventId || req.body.eventId; // Supondo que o ID do evento esteja nos parâmetros ou no corpo da requisição
-      const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'permissionCategory.role');
-
-      if (!evento) {
-        return res.status(404).json({ message: "Evento não encontrado." });
-        console.log(error);
-      }
-
-      const userPermission = evento.permissionCategory.find(
-        (perm) => perm.user.toString() === req.user._id.toString()
-      );
-
-      if (!userPermission) {
-        return res.status(403).json({ message: "Acesso negado, você não faz parte da equipe deste evento." });
-      }
-
-      const userPermissionLevel = getPermissionLevel(userPermission.role);
-      const requiredPermissionLevel = getPermissionLevel(requiredPermission);
-
-      if (userPermissionLevel < requiredPermissionLevel) {
-        return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
+      // Verifica permissões baseadas no evento somente se o eventId estiver presente
+      const eventId = req.params.eventId || req.body.eventId;
+      if (eventId) {
+        const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'permissionCategory.role');
+  
+        if (!evento) {
+          return res.status(404).json({ message: "Evento não encontrado." });
+        }
+  
+        const userPermission = evento.permissionCategory.find(
+          (perm) => perm.user.toString() === req.user._id.toString()
+        );
+  
+        if (!userPermission && requiredPermission !== 'user') {
+          return res.status(403).json({ message: "Acesso negado, você não faz parte da equipe deste evento." });
+        }
+  
+        if (userPermission) {
+          const userPermissionLevel = getPermissionLevel(userPermission.role);
+          const requiredPermissionLevel = getPermissionLevel(requiredPermission);
+  
+          if (userPermissionLevel < requiredPermissionLevel) {
+            return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
+          }
+        }
       }
 
       next();
