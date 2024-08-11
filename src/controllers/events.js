@@ -12,7 +12,14 @@ export const criarEvento = async (req, res) => {
     }
 
     const token = authHeader.split(" ")[1];
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    let decodedToken;
+    
+    try {
+      decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Token inválido ou expirado" });
+    }
+    
     const userId = decodedToken.id;
 
     const {
@@ -40,13 +47,12 @@ export const criarEvento = async (req, res) => {
 
     const eventoSalvo = await novoEvento.save();
 
-    res.status(200).json(eventoSalvo);
+    res.status(201).json(eventoSalvo);
   } catch (error) {
     console.error("Erro ao criar evento:", error);
-    res.status(400).json({ error: "Erro ao criar evento" });
+    res.status(500).json({ error: "Erro ao criar evento" });
   }
 };
-
 
 export const editarEvento = async (req, res) => {
   try {
