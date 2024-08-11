@@ -237,59 +237,53 @@ export async function updateUser(req, res) {
   const { nome } = req.body;
 }
 
-export async function updateUserPermission(req, res) {
-  const { email, permissionCategory, eventId } = req.body;
-
-  if (!email || !permissionCategory || !eventId) {
-    return res.status(400).json("Email, evento e categoria de permissão são obrigatórios.");
-  }
-
+export const updateUserPermission = async (req, res) => {
   try {
-    // Encontrar o usuário pelo email
-    const user = await User.findOne({ email });
+    const { email, eventId, role } = req.body;
 
-    if (!user) {
-      return res.status(404).json("Usuário não encontrado.");
+    if (!email || !eventId || !role) {
+      return res.status(400).json({ message: "Email, eventId e role são obrigatórios." });
     }
 
-    // Verificar se o evento existe
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
     const evento = await Evento.findById(eventId);
     if (!evento) {
-      return res.status(404).json("Evento não encontrado.");
+      return res.status(404).json({ message: "Evento não encontrado." });
     }
 
-    // Verificar se o usuário já tem uma permissão associada ao evento
-    const existingPermission = user.permissionCategory.find(
-      (perm) => perm.eventId.toString() === eventId
+    // Atualizar ou adicionar a permissão do evento no modelo do usuário
+    let userEventPermission = user.permissionCategory.find(
+      (perm) => perm.eventId.toString() === eventId.toString()
     );
 
-    if (existingPermission) {
-      // Atualizar a permissão existente
-      existingPermission.role = permissionCategory;
+    if (userEventPermission) {
+      userEventPermission.role = role;
     } else {
-      // Adicionar nova permissão ao usuário para o evento específico
-      user.permissionCategory.push({ eventId, role: permissionCategory });
+      user.permissionCategory.push({ eventId, role });
     }
 
-    // Salvar as alterações no usuário
     await user.save();
 
-    // Atualizar também o modelo Evento
-    const eventPermission = evento.permissionCategory.find(
+    // Atualizar ou adicionar a permissão do usuário no modelo do evento
+    let eventUserPermission = evento.permissionCategory.find(
       (perm) => perm.user.toString() === user._id.toString()
     );
 
-    if (eventPermission) {
-      eventPermission.role = permissionCategory;
+    if (eventUserPermission) {
+      eventUserPermission.role = role;
     } else {
-      evento.permissionCategory.push({ user: user._id, role: permissionCategory });
+      evento.permissionCategory.push({ user: user._id, role });
     }
 
     await evento.save();
 
-    res.status(200).json({ message: "Categoria de permissão atualizada com sucesso." });
+    res.status(200).json({ message: "Permissão atualizada com sucesso." });
   } catch (error) {
-    console.error("Erro ao atualizar a categoria de permissão:", error);
-    res.status(500).json("Erro ao atualizar a categoria de permissão.");
+    console.error("Erro ao atualizar a permissão:", error);
+    res.status(500).json({ message: "Erro interno do servidor." });
   }
 };
