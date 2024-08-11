@@ -32,6 +32,7 @@ const protect = (requiredPermission) => async (req, res, next) => {
 
       if (!evento) {
         return res.status(404).json({ message: "Evento não encontrado." });
+        console.log(error);
       }
 
       const userPermission = evento.permissionCategory.find(
