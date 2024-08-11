@@ -1,6 +1,8 @@
 import User from "../models/user.js";
 import generateToken from "../utils/generateToken.js";
 import CommercialProfile from "../models/commercialProfile.js";
+import Evento from "../models/event.js";
+
 
 export async function create(req, res) {
   const { name, email, password } = req.body;
@@ -236,21 +238,54 @@ export async function updateUser(req, res) {
 }
 
 export async function updateUserPermission(req, res) {
-  const { email, permissionCategory } = req.body;
+  const { email, permissionCategory, eventId } = req.body;
 
-  if (!email || !permissionCategory) {
-    return res.status(400).json("Email e categoria de permissão são obrigatórios.");
+  if (!email || !permissionCategory || !eventId) {
+    return res.status(400).json("Email, evento e categoria de permissão são obrigatórios.");
   }
 
   try {
+    // Encontrar o usuário pelo email
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json("Usuário não encontrado.");
     }
 
-    user.permissionCategory = permissionCategory;
+    // Verificar se o evento existe
+    const evento = await Evento.findById(eventId);
+    if (!evento) {
+      return res.status(404).json("Evento não encontrado.");
+    }
+
+    // Verificar se o usuário já tem uma permissão associada ao evento
+    const existingPermission = user.permissionCategory.find(
+      (perm) => perm.eventId.toString() === eventId
+    );
+
+    if (existingPermission) {
+      // Atualizar a permissão existente
+      existingPermission.role = permissionCategory;
+    } else {
+      // Adicionar nova permissão ao usuário para o evento específico
+      user.permissionCategory.push({ eventId, role: permissionCategory });
+    }
+
+    // Salvar as alterações no usuário
     await user.save();
+
+    // Atualizar também o modelo Evento
+    const eventPermission = evento.permissionCategory.find(
+      (perm) => perm.user.toString() === user._id.toString()
+    );
+
+    if (eventPermission) {
+      eventPermission.role = permissionCategory;
+    } else {
+      evento.permissionCategory.push({ user: user._id, role: permissionCategory });
+    }
+
+    await evento.save();
 
     res.status(200).json({ message: "Categoria de permissão atualizada com sucesso." });
   } catch (error) {
@@ -258,5 +293,3 @@ export async function updateUserPermission(req, res) {
     res.status(500).json("Erro ao atualizar a categoria de permissão.");
   }
 };
-
-
