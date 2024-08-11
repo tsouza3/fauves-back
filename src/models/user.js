@@ -23,6 +23,14 @@ const userSchema = mongoose.Schema({
   numero: { type: Number },
 }, { timestamps: true });
 
+// Middleware para garantir que 'user' seja o padrão em permissionCategory
+userSchema.pre("save", function(next) {
+  if (this.permissionCategory.length === 0) {
+    this.permissionCategory.push({ role: 'user' });
+  }
+  next();
+});
+
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
