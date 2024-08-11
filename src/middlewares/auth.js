@@ -25,10 +25,10 @@ const protect = (requiredPermission) => async (req, res, next) => {
         return res.status(401).json({ message: "Usuário não encontrado, não autorizado." });
       }
 
-      const userPermissionLevel = getPermissionLevel(req.user.role);
-      const requiredPermissionLevel = getPermissionLevel(requiredPermission);
+      // Verificando se o usuário tem a categoria de permissão requerida
+      const userHasPermission = req.user.permissionCategory.includes(requiredPermission);
 
-      if (userPermissionLevel < requiredPermissionLevel) {
+      if (!userHasPermission) {
         return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
       }
 
