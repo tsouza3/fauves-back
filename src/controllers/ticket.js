@@ -173,8 +173,7 @@ export const updateTicket = async (req, res) => {
 };
 
 export const emitirCortesia = async (req, res) => {
-
-const { email, quantidadeIngressos, event_Id, ticket_Id } = req.body;
+    const { email, event_Id, ticket_Id } = req.body;
 
     try {
         // Buscar usuário pelo e-mail
@@ -189,39 +188,34 @@ const { email, quantidadeIngressos, event_Id, ticket_Id } = req.body;
             return res.status(404).send('Ingresso não encontrado');
         }
 
-        const qrCodes = [];
+        // Gerar um QR Code para o ingresso de cortesia
+        const uniqueTicketId = new mongoose.Types.ObjectId(); // Gerar um ID único para o ingresso
+        const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user._id}/${uniqueTicketId}`);
 
-        // Gerar QR Codes para ingressos de cortesia
-        for (let i = 0; i < quantidadeIngressos; i++) {
-            const uniqueTicketId = new mongoose.Types.ObjectId(); // Gerar um ID único para cada ingresso
-            const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user._id}/${uniqueTicketId}`);
-            qrCodes.push(qrCodeData);
-        }
-
-        // Atualizar o ingresso com os QR Codes
+        // Atualizar o ingresso com o QR Code
         const updatedTicket = await Ticket.findByIdAndUpdate(ticket_Id, {
-            $push: { txid: { $each: qrCodes } },
+            $push: { txid: qrCodeData },
         }, { new: true });
 
         if (!updatedTicket) {
-            return res.status(404).send('Erro ao atualizar ingresso com QR Codes');
+            return res.status(404).send('Erro ao atualizar ingresso com QR Code');
         }
 
-        // Atualizar o usuário com os QR Codes, se necessário
+        // Atualizar o usuário com o QR Code, se necessário
         const updatedUser = await User.findByIdAndUpdate(user._id, {
-            $push: { QRCode: { $each: qrCodes } },
+            $push: { QRCode: qrCodeData },
         }, { new: true });
 
         if (!updatedUser) {
-            return res.status(404).send('Erro ao atualizar usuário com QR Codes');
+            return res.status(404).send('Erro ao atualizar usuário com QR Code');
         }
 
-        console.log('Ingressos de cortesia criados e QR Codes gerados:', updatedTicket._id);
-        res.status(200).send('Ingressos de cortesia criados com sucesso');
+        console.log('Ingresso de cortesia criado e QR Code gerado:', updatedTicket._id);
+        res.status(200).send('Ingresso de cortesia criado com sucesso');
     } catch (error) {
-        console.error('Erro ao gerar ingressos de cortesia:', error);
+        console.error('Erro ao gerar ingresso de cortesia:', error);
         res.status(500).send('Erro interno');
     }
-});
+};
 
 
