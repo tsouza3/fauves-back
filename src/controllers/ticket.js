@@ -171,3 +171,57 @@ export const updateTicket = async (req, res) => {
     res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
+
+export const emitirCortesia = async (req, res) => {
+
+const { email, quantidadeIngressos, event_Id, ticket_Id } = req.body;
+
+    try {
+        // Buscar usuário pelo e-mail
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).send('Usuário não encontrado');
+        }
+
+        // Buscar o ingresso pelo ticket_Id
+        const ticket = await Ticket.findById(ticket_Id);
+        if (!ticket) {
+            return res.status(404).send('Ingresso não encontrado');
+        }
+
+        const qrCodes = [];
+
+        // Gerar QR Codes para ingressos de cortesia
+        for (let i = 0; i < quantidadeIngressos; i++) {
+            const uniqueTicketId = new mongoose.Types.ObjectId(); // Gerar um ID único para cada ingresso
+            const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user._id}/${uniqueTicketId}`);
+            qrCodes.push(qrCodeData);
+        }
+
+        // Atualizar o ingresso com os QR Codes
+        const updatedTicket = await Ticket.findByIdAndUpdate(ticket_Id, {
+            $push: { txid: { $each: qrCodes } },
+        }, { new: true });
+
+        if (!updatedTicket) {
+            return res.status(404).send('Erro ao atualizar ingresso com QR Codes');
+        }
+
+        // Atualizar o usuário com os QR Codes, se necessário
+        const updatedUser = await User.findByIdAndUpdate(user._id, {
+            $push: { QRCode: { $each: qrCodes } },
+        }, { new: true });
+
+        if (!updatedUser) {
+            return res.status(404).send('Erro ao atualizar usuário com QR Codes');
+        }
+
+        console.log('Ingressos de cortesia criados e QR Codes gerados:', updatedTicket._id);
+        res.status(200).send('Ingressos de cortesia criados com sucesso');
+    } catch (error) {
+        console.error('Erro ao gerar ingressos de cortesia:', error);
+        res.status(500).send('Erro interno');
+    }
+});
+
+
