@@ -149,15 +149,7 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
         res.status(500).send('Erro interno');
     }
 });
-```
 
-### Mudanças Realizadas:
-
-1. **Substituição do `uniqueTicketId`**: Em vez de gerar um novo ID para cada QR Code, a função usa o `ticket_Id` obtido do evento para criar a URL do QR Code.
-
-2. **URL do QR Code**: A URL gerada para o QR Code agora inclui o `ticket_Id` diretamente.
-
-Isso garante que o QR Code gerado esteja corretamente relacionado ao `ticket_Id` específico do evento. Se cada ingresso tem um `ticket_Id` único, você precisará garantir que o `ticket_Id` correto é atribuído aos QR Codes. Se houver múltiplos ingressos e cada um deve ter um `ticket_Id` diferente, será necessário ajustar o processo para garantir que cada QR Code tenha um `ticket_Id` exclusivo.
 app.use("/api/users", routes);
 
 const port = process.env.PORT || 3006;
