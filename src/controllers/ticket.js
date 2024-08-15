@@ -188,11 +188,13 @@ export const emitirCortesia = async (req, res) => {
             return res.status(404).send('Ingresso não encontrado');
         }
 
-        // Gerar um QR Code para o ingresso de cortesia
-        const uniqueTicketId = new mongoose.Types.ObjectId(); // Gerar um ID único para o ingresso
-        const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user._id}/${uniqueTicketId}`);
+        // Gerar um identificador único para o QR Code
+        const uniqueId = uuidv4();
 
-        // Atualizar o ingresso com o QR Code
+        // Criar a URL do QR Code incluindo o event_Id, user_Id, ticket_Id e uniqueId
+        const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user._id}/${ticket_Id}#${uniqueId}`);
+
+        // Atualizar o ingresso com o QR Code gerado
         const updatedTicket = await Ticket.findByIdAndUpdate(ticket_Id, {
             $push: { txid: qrCodeData },
         }, { new: true });
@@ -201,7 +203,7 @@ export const emitirCortesia = async (req, res) => {
             return res.status(404).send('Erro ao atualizar ingresso com QR Code');
         }
 
-        // Atualizar o usuário com o QR Code, se necessário
+        // Atualizar o usuário com o QR Code gerado
         const updatedUser = await User.findByIdAndUpdate(user._id, {
             $push: { QRCode: qrCodeData },
         }, { new: true });
