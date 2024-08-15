@@ -2,16 +2,6 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import Evento from "../models/event.js";
 
-const getPermissionLevel = (permission) => {
-  const levels = {
-    user: 1,
-    observer: 2,
-    seller: 3,
-    admin: 4,
-  };
-  return levels[permission] || 0; // Retorna 0 se a permissão não for encontrada
-};
-
 const protect = (requiredPermission) => async (req, res, next) => {
   let token;
 
@@ -51,6 +41,14 @@ const protect = (requiredPermission) => async (req, res, next) => {
             return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
           }
         }
+      } else {
+        // Se a rota não estiver relacionada a um evento específico, faça a verificação da permissão global do usuário
+        const userPermissionLevel = getPermissionLevel(req.user.role);
+        const requiredPermissionLevel = getPermissionLevel(requiredPermission);
+
+        if (userPermissionLevel < requiredPermissionLevel) {
+          return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
+        }
       }
 
       next();
@@ -67,5 +65,3 @@ const protect = (requiredPermission) => async (req, res, next) => {
     return res.status(400).json({ message: "Token não fornecido ou em formato inválido." });
   }
 };
-
-export default protect;
