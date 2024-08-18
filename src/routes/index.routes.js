@@ -110,7 +110,7 @@ router.get("/events", protect(['user, admin']), buscarEventosDoUsuario);
 router.get("/profile/:profileId", protect(['user, admin']), getProfileDataByUser);
 
 // Rota para atualizar a categoria de permissão do usuário
-router.put("/update-permission", protect(['admin']), updateUserPermission);
+router.post("/update-permission", protect(['admin']), updateUserPermission);
 
 router.use("/uploads", express.static(path.resolve("uploads")));
 
