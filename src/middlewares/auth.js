@@ -1,3 +1,7 @@
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js'; // Ajuste o caminho conforme necessário
+import Evento from '../models/Evento.js'; // Ajuste o caminho conforme necessário
+
 // Middleware para verificar permissões
 export const protect = (requiredRoles) => async (req, res, next) => {
   let token;
@@ -48,12 +52,9 @@ export const protect = (requiredRoles) => async (req, res, next) => {
         } else {
           console.log(`Permissões do usuário ${req.user._id}:`, userPermission.role);
           
-          const userRole = userPermission.role;
-          const userRoles = Array.isArray(userRole) ? userRole : [userRole];
+          const userRoles = Array.isArray(userPermission.role) ? userPermission.role : [userPermission.role];
           
-          const hasPermission = userRoles.some((role) =>
-            rolesArray.some((requiredRole) => roleHierarchy[role] <= roleHierarchy[requiredRole])
-          );
+          const hasPermission = userRoles.some((role) => rolesArray.includes(role));
 
           if (!hasPermission) {
             console.log("Acesso negado, permissões insuficientes.");
