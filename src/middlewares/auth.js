@@ -17,32 +17,31 @@ const protect = (requiredRole) => async (req, res, next) => {
         return res.status(401).json({ message: "Usuário não encontrado, não autorizado." });
       }
 
+      // Verificação do eventId apenas se fornecido
       const eventId = req.params.eventId || req.body.eventId;
+      if (eventId) {
+        const evento = await Evento.findById(eventId);
 
-      if (!eventId) {
-        console.log("eventId não fornecido.");
-        return res.status(400).json({ message: "eventId não fornecido." });
-      }
+        if (!evento) {
+          console.log(`Evento não encontrado para eventId: ${eventId}`);
+          return res.status(404).json({ message: "Evento não encontrado." });
+        }
 
-      const evento = await Evento.findById(eventId);
+        const userPermission = evento.permissionCategory.find(
+          (perm) => perm.user.toString() === req.user._id.toString()
+        );
 
-      if (!evento) {
-        console.log(`Evento não encontrado para eventId: ${eventId}`);
-        return res.status(404).json({ message: "Evento não encontrado." });
-      }
+        if (!userPermission) {
+          console.log(`Usuário ${req.user._id} não encontrado na categoria de permissões do evento.`);
+          return res.status(403).json({ message: "Acesso negado, você não faz parte da equipe deste evento." });
+        }
 
-      const userPermission = evento.permissionCategory.find(
-        (perm) => perm.user.toString() === req.user._id.toString()
-      );
-
-      if (!userPermission) {
-        console.log(`Usuário ${req.user._id} não encontrado na categoria de permissões do evento.`);
-        return res.status(403).json({ message: "Acesso negado, você não faz parte da equipe deste evento." });
-      }
-
-      if (userPermission.role !== requiredRole) {
-        console.log(`Usuário ${req.user._id} tem a role '${userPermission.role}', mas '${requiredRole}' é necessária.`);
-        return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
+        if (userPermission.role !== requiredRole) {
+          console.log(`Usuário ${req.user._id} tem a role '${userPermission.role}', mas '${requiredRole}' é necessária.`);
+          return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
+        }
+      } else {
+        console.log("eventId não fornecido, prosseguindo sem verificação de permissões do evento.");
       }
 
       next();
