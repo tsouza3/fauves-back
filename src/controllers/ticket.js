@@ -2,6 +2,8 @@ import Ticket from "../models/ticket.js";
 import Event from "../models/event.js";
 import User from "../models/user.js";
 import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from 'uuid';
+
 
 export const createTicket = async (req, res) => {
   const {
