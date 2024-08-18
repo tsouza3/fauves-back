@@ -25,7 +25,7 @@ import {
   updateTicket,
   emitirCortesia
 } from "../controllers/ticket.js";
-import protect from "../middlewares/auth.js";
+import { protect } from "../middlewares/auth.js";
 
 const router = express.Router();
 
