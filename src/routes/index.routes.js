@@ -9,6 +9,7 @@ import {
   createProductorProfile,
   getProfileDataByUser,
   updateUserPermission,
+  getUsersByRole
 } from "../controllers/user.js";
 import {
   criarEvento,
@@ -77,6 +78,9 @@ router.put(
 );
 
 router.get("/event/:eventId", protect(['user', 'admin']), getEventById);
+
+router.get("/getusersbyrole/:role", protect(['user', 'admin']), getUsersByRole);
+
 
 router.delete(
   "/event/:eventId",
