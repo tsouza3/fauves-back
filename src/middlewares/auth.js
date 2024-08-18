@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import Evento from "../models/event.js";
 
-const protect = (requiredPermissions) => async (req, res, next) => {
+const protect = (requiredRole) => async (req, res, next) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
@@ -13,54 +13,42 @@ const protect = (requiredPermissions) => async (req, res, next) => {
       req.user = await User.findById(decoded.id).select("-password");
 
       if (!req.user) {
+        console.log("Usuário não encontrado.");
         return res.status(401).json({ message: "Usuário não encontrado, não autorizado." });
       }
 
-      // Verifica permissões baseadas no evento somente se o eventId estiver presente
       const eventId = req.params.eventId || req.body.eventId;
-      if (eventId) {
-        const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'permissionCategory.role');
 
-        if (!evento) {
-          return res.status(404).json({ message: "Evento não encontrado." });
-        }
+      if (!eventId) {
+        console.log("eventId não fornecido.");
+        return res.status(400).json({ message: "eventId não fornecido." });
+      }
 
-        // Encontra as permissões do usuário dentro do array permissionCategory
-        const userPermission = evento.permissionCategory.find(
-          (perm) => perm.user.toString() === req.user._id.toString()
-        );
+      const evento = await Evento.findById(eventId);
 
-        if (!userPermission && !requiredPermissions.includes('user')) {
-          return res.status(403).json({ message: "Acesso negado, você não faz parte da equipe deste evento." });
-        }
+      if (!evento) {
+        console.log(`Evento não encontrado para eventId: ${eventId}`);
+        return res.status(404).json({ message: "Evento não encontrado." });
+      }
 
-        if (userPermission) {
-          // `userPermission.role` pode ser uma string ou um array de strings
-          const userRoles = Array.isArray(userPermission.role) ? userPermission.role : [userPermission.role];
-          
-          // Verifica se o usuário tem pelo menos uma das permissões requeridas
-          const hasPermission = userRoles.some((role) =>
-            requiredPermissions.includes(role)
-          );
+      const userPermission = evento.permissionCategory.find(
+        (perm) => perm.user.toString() === req.user._id.toString()
+      );
 
-          if (!hasPermission) {
-            return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
-          }
-        }
-      } else {
-        // Se não há um eventId, o usuário deve ter uma permissão global, como 'admin'
-        const hasGlobalPermission = req.user.permissionCategory.some(
-          (perm) => requiredPermissions.includes(perm.role)
-        );
+      if (!userPermission) {
+        console.log(`Usuário ${req.user._id} não encontrado na categoria de permissões do evento.`);
+        return res.status(403).json({ message: "Acesso negado, você não faz parte da equipe deste evento." });
+      }
 
-        if (!hasGlobalPermission) {
-          return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
-        }
+      if (userPermission.role !== requiredRole) {
+        console.log(`Usuário ${req.user._id} tem a role '${userPermission.role}', mas '${requiredRole}' é necessária.`);
+        return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
       }
 
       next();
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
+        console.log("Token expirado.");
         return res.status(401).json({ message: "Token expirado, por favor faça login novamente." });
       }
 
