@@ -33,7 +33,10 @@ const protect = (requiredRoles) => async (req, res, next) => {
       if (eventId) {
         console.log(`Verificando permissões para o evento ${eventId}`);
         
-        const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'permissionCategory.role');
+        const evento = await Evento.findById(eventId).populate({
+          path: 'permissionCategory.user',
+          select: 'role'
+        });
 
         if (!evento) {
           console.log("Evento não encontrado.");
@@ -44,7 +47,7 @@ const protect = (requiredRoles) => async (req, res, next) => {
 
         // Encontra as permissões do usuário dentro do array permissionCategory
         const userPermission = evento.permissionCategory.find(
-          (perm) => perm.user.toString() === req.user._id.toString()
+          (perm) => perm.user._id.toString() === req.user._id.toString()
         );
 
         if (!userPermission) {
@@ -61,7 +64,7 @@ const protect = (requiredRoles) => async (req, res, next) => {
           
           // Verifica se o usuário tem pelo menos uma das permissões requeridas
           const hasPermission = userRoles.some((role) =>
-            requiredRoles.some((requiredRole) => roleHierarchy[role] >= roleHierarchy[requiredRole])
+            requiredRoles.some((requiredRole) => roleHierarchy[role] <= roleHierarchy[requiredRole])
           );
 
           if (!hasPermission) {
