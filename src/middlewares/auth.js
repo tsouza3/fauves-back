@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import Evento from "../models/event.js";
 
-// Define a hierarquia das roles
 const roleHierarchy = {
   admin: 4,
   seller: 3,
@@ -28,7 +27,6 @@ const protect = (requiredRoles) => async (req, res, next) => {
 
       console.log(`Usuário ${req.user._id} encontrado com a role ${req.user.role}`);
 
-      // Verifica permissões baseadas no evento somente se o eventId estiver presente
       const eventId = req.params.eventId || req.body.eventId;
       if (eventId) {
         console.log(`Verificando permissões para o evento ${eventId}`);
@@ -45,7 +43,6 @@ const protect = (requiredRoles) => async (req, res, next) => {
 
         console.log(`Permissões encontradas para o evento ${eventId}:`, evento.permissionCategory);
 
-        // Encontra as permissões do usuário dentro do array permissionCategory
         const userPermission = evento.permissionCategory.find(
           (perm) => perm.user._id.toString() === req.user._id.toString()
         );
@@ -59,10 +56,14 @@ const protect = (requiredRoles) => async (req, res, next) => {
         } else {
           console.log(`Permissões do usuário ${req.user._id}:`, userPermission.role);
           
-          // Permissões do usuário podem ser uma string ou um array de strings
+          // Garantir que requiredRoles seja um array
+          if (!Array.isArray(requiredRoles)) {
+            console.log("requiredRoles não é um array:", requiredRoles);
+            return res.status(500).json({ message: "Erro interno do servidor: requiredRoles deve ser um array." });
+          }
+
           const userRoles = Array.isArray(userPermission.role) ? userPermission.role : [userPermission.role];
           
-          // Verifica se o usuário tem pelo menos uma das permissões requeridas
           const hasPermission = userRoles.some((role) =>
             requiredRoles.some((requiredRole) => roleHierarchy[role] <= roleHierarchy[requiredRole])
           );
