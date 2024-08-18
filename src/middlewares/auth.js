@@ -1,15 +1,4 @@
-import jwt from "jsonwebtoken";
-import User from "../models/user.js";
-import Evento from "../models/event.js";
-
-const roleHierarchy = {
-  admin: 4,
-  seller: 3,
-  checkIn: 2,
-  observer: 1,
-  user: 0
-};
-
+// Middleware para verificar permissões
 const protect = (requiredRoles) => async (req, res, next) => {
   let token;
 
@@ -26,6 +15,9 @@ const protect = (requiredRoles) => async (req, res, next) => {
       }
 
       console.log(`Usuário ${req.user._id} encontrado com as permissões ${JSON.stringify(req.user.permissionCategory)}`);
+
+      // Garantir que requiredRoles seja um array
+      const rolesArray = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
 
       const eventId = req.params.eventId || req.body.eventId;
       if (eventId) {
@@ -49,24 +41,18 @@ const protect = (requiredRoles) => async (req, res, next) => {
 
         if (!userPermission) {
           console.log(`Usuário ${req.user._id} não tem permissões associadas para o evento ${eventId}`);
-          if (!requiredRoles.includes('user')) {
+          if (!rolesArray.includes('user')) {
             console.log("Acesso negado, você não faz parte da equipe deste evento.");
             return res.status(403).json({ message: "Acesso negado, você não faz parte da equipe deste evento." });
           }
         } else {
           console.log(`Permissões do usuário ${req.user._id}:`, userPermission.role);
           
-          // Garantir que requiredRoles seja um array
-          if (!Array.isArray(requiredRoles)) {
-            console.log("requiredRoles não é um array:", requiredRoles);
-            return res.status(500).json({ message: "Erro interno do servidor: requiredRoles deve ser um array." });
-          }
-
           const userRole = userPermission.role;
           const userRoles = Array.isArray(userRole) ? userRole : [userRole];
           
           const hasPermission = userRoles.some((role) =>
-            requiredRoles.some((requiredRole) => roleHierarchy[role] <= roleHierarchy[requiredRole])
+            rolesArray.some((requiredRole) => roleHierarchy[role] <= roleHierarchy[requiredRole])
           );
 
           if (!hasPermission) {
@@ -93,5 +79,3 @@ const protect = (requiredRoles) => async (req, res, next) => {
     return res.status(400).json({ message: "Token não fornecido ou em formato inválido." });
   }
 };
-
-export default protect;
