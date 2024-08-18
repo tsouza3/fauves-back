@@ -56,57 +56,57 @@ router.post("/register", create);
 router.post("/login", login);
 
 // Rotas de perfil
-router.put("/:id", protect(['user']), update); // Permissão para atualizar perfil
-router.get("/profile", protect(['user']), getProfileData); // Permissão para acessar perfil
+router.put("/:id", protect(['user', 'admin']), update); // Permissão para atualizar perfil
+router.get("/profile", protect(['user', 'admin']), getProfileData); // Permissão para acessar perfil
 
 // Rotas de evento
 router.post(
   "/eventos",
-  protect(['user']), // Permissão para criar eventos
+  protect(['user', 'admin']), // Permissão para criar eventos
   upload.single("capaEvento"),
   criarEvento
 );
 
-router.get("/eventos", protect(['user']), buscarEventos); // Permissão para listar eventos
-router.get("/eventos/:profileId", protect(['user']), buscarEventosPorPerfilComercial);
+router.get("/eventos", protect(['user', 'admin']), buscarEventos); // Permissão para listar eventos
+router.get("/eventos/:profileId", protect(['user', 'admin']), buscarEventosPorPerfilComercial);
 
 router.put(
   "/eventos/:eventId",
-  protect(['user', 'admin']), // Permissão para editar eventos
+  protect(['admin']), // Permissão para editar eventos
   editarEvento
 );
 
-router.get("/event/:eventId", protect(['user']), getEventById);
+router.get("/event/:eventId", protect(['user', 'admin']), getEventById);
 
 router.delete(
   "/event/:eventId",
-  protect(['user', 'admin']), // Permissão para deletar eventos
+  protect(['admin']), // Permissão para deletar eventos
   deleteEvent
 );
 
 router.post(
   "/events/:eventId/tickets",
-  protect(['user', 'admin']), // Permissão para criar tickets
+  protect(['admin']), // Permissão para criar tickets
   createTicket
 );
 
 router.delete(
   "/events/:eventId/tickets/:ticketId",
-  protect(['user', 'admin']), // Permissão para deletar tickets
+  protect(['admin']), // Permissão para deletar tickets
   deleteTicket
 );
 
 router.put(
   "/emitircortesia",
-  protect(['user', 'admin']), // Permissão para atualizar tickets
+  protect(['admin']), // Permissão para atualizar tickets
   emitirCortesia
 );
 
-router.get("/events", protect(['user']), buscarEventosDoUsuario);
-router.get("/profile/:profileId", protect(['user']), getProfileDataByUser);
+router.get("/events", protect(['user, admin']), buscarEventosDoUsuario);
+router.get("/profile/:profileId", protect(['user, admin']), getProfileDataByUser);
 
 // Rota para atualizar a categoria de permissão do usuário
-router.put("/update-permission", protect(['user', 'admin']), updateUserPermission);
+router.put("/update-permission", protect(['admin']), updateUserPermission);
 
 router.use("/uploads", express.static(path.resolve("uploads")));
 
