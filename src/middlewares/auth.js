@@ -14,7 +14,6 @@ const roleHierarchy = {
 const protect = (requiredRoles) => async (req, res, next) => {
   let token;
 
-  // Verifica se o token foi fornecido no cabeçalho da requisição
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
       token = req.headers.authorization.split(" ")[1];
@@ -58,11 +57,11 @@ const protect = (requiredRoles) => async (req, res, next) => {
           console.log(`Permissões do usuário ${req.user._id}:`, userPermission.role);
           
           // Permissões do usuário podem ser uma string ou um array de strings
-          const userPermissions = Array.isArray(userPermission.role) ? userPermission.role : [userPermission.role];
+          const userRoles = Array.isArray(userPermission.role) ? userPermission.role : [userPermission.role];
           
           // Verifica se o usuário tem pelo menos uma das permissões requeridas
-          const hasPermission = userPermissions.some((role) =>
-            requiredRoles.some((requiredRole) => roleHierarchy[role] <= roleHierarchy[requiredRole])
+          const hasPermission = userRoles.some((role) =>
+            requiredRoles.some((requiredRole) => roleHierarchy[role] >= roleHierarchy[requiredRole])
           );
 
           if (!hasPermission) {
