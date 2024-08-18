@@ -1,5 +1,5 @@
 // Middleware para verificar permissões
-export default const protect = (requiredRoles) => async (req, res, next) => {
+export const protect = (requiredRoles) => async (req, res, next) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
