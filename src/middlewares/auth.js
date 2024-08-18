@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import Evento from "../models/event.js";
 
-const protect = (requiredPermission) => async (req, res, next) => {
+const protect = (requiredPermissions) => async (req, res, next) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
@@ -20,34 +20,33 @@ const protect = (requiredPermission) => async (req, res, next) => {
       const eventId = req.params.eventId || req.body.eventId;
       if (eventId) {
         const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'permissionCategory.role');
-  
+
         if (!evento) {
           return res.status(404).json({ message: "Evento não encontrado." });
         }
-  
+
+        // Encontra as permissões do usuário dentro do array permissionCategory
         const userPermission = evento.permissionCategory.find(
           (perm) => perm.user.toString() === req.user._id.toString()
         );
-  
-        if (!userPermission && requiredPermission !== 'user') {
+
+        // Verifica se o usuário tem alguma permissão requerida
+        if (!userPermission && !requiredPermissions.includes('user')) {
           return res.status(403).json({ message: "Acesso negado, você não faz parte da equipe deste evento." });
         }
-  
+
         if (userPermission) {
-          const userPermissionLevel = getPermissionLevel(userPermission.role);
-          const requiredPermissionLevel = getPermissionLevel(requiredPermission);
-  
-          if (userPermissionLevel < requiredPermissionLevel) {
+          // Permissões do usuário podem ser uma string ou um array de strings
+          const userPermissions = Array.isArray(userPermission.role) ? userPermission.role : [userPermission.role];
+          
+          // Verifica se o usuário tem pelo menos uma das permissões requeridas
+          const hasPermission = userPermissions.some((permission) =>
+            requiredPermissions.includes(permission)
+          );
+
+          if (!hasPermission) {
             return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
           }
-        }
-      } else {
-        // Se a rota não estiver relacionada a um evento específico, faça a verificação da permissão global do usuário
-        const userPermissionLevel = getPermissionLevel(req.user.role);
-        const requiredPermissionLevel = getPermissionLevel(requiredPermission);
-
-        if (userPermissionLevel < requiredPermissionLevel) {
-          return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
         }
       }
 
@@ -65,3 +64,5 @@ const protect = (requiredPermission) => async (req, res, next) => {
     return res.status(400).json({ message: "Token não fornecido ou em formato inválido." });
   }
 };
+
+export default protect;
