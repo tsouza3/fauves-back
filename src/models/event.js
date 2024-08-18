@@ -30,7 +30,7 @@ const eventoSchema = new mongoose.Schema({
       },
       role: {
         type: String,
-        enum: ['user', 'observer', 'seller', 'admin'],
+        enum: ['user', 'observer', 'seller', 'admin', 'checkin'],
         default: 'user',
       },
     },
