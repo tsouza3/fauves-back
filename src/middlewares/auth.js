@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/user.js'; // Ajuste o caminho conforme necessário
-import Evento from '../models/events.js'; // Ajuste o caminho conforme necessário
+import Evento from "../models/event.js";
+import User from "../models/user.js";
 
 // Middleware para verificar permissões
 export const protect = (requiredRoles) => async (req, res, next) => {
