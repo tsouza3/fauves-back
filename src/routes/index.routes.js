@@ -79,7 +79,7 @@ router.put(
 
 router.get("/event/:eventId", protect(['user', 'admin']), getEventById);
 
-router.get("/role/:role", protect(['user', 'admin']), getUsersByRole);
+router.get("/role/:eventId", protect(['user', 'admin']), getUsersByRole);
 
 
 router.delete(
