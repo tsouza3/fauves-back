@@ -10,7 +10,7 @@ const userSchema = mongoose.Schema({
   commercialProfiles: [{ type: mongoose.Schema.Types.ObjectId, ref: "CommercialProfile" }],
   permissionCategory: [{
     eventId: { type: mongoose.Schema.Types.ObjectId, ref: "Evento" }, // Referência ao evento
-    role: { type: String, enum: ['user', 'observer', 'seller', 'admin'], default: 'user' } // Permissão para o evento
+    role: { type: String, enum: ['user', 'observer', 'seller', 'admin', 'checkin'], default: 'user' } // Permissão para o evento
   }],
   cpf: { type: String },
   celular: { type: String },
