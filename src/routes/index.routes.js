@@ -23,6 +23,7 @@ import {
   createTicket,
   deleteTicket,
   updateTicket,
+  emitirCortesia
 } from "../controllers/ticket.js";
 import protect from "../middlewares/auth.js";
 
@@ -89,6 +90,13 @@ router.post(
   createTicket
 );
 
+
+router.post(
+  "/events/:eventId/tickets",
+  protect('admin'), // Permissão para criar tickets
+  createTicket
+);
+
 router.delete(
   "/events/:eventId/tickets/:ticketId",
   protect('admin'), // Permissão para deletar tickets
@@ -96,9 +104,9 @@ router.delete(
 );
 
 router.put(
-  "/events/:eventId/tickets/:ticketId",
+  "/emitircortesia",
   protect('admin'), // Permissão para atualizar tickets
-  updateTicket
+  emitirCortesia
 );
 
 router.get("/events", protect('user'), buscarEventosDoUsuario);
