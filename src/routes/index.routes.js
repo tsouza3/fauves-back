@@ -96,7 +96,7 @@ router.delete(
   deleteTicket
 );
 
-router.put(
+router.post(
   "/emitircortesia",
   protect(['admin']), // Permissão para atualizar tickets
   emitirCortesia
