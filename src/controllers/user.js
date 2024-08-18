@@ -318,24 +318,27 @@ export const updateUserPermission = async (req, res) => {
 };
 
 export const getUsersByRole = async (req, res) => {
-  const { role } = req.params;
-
-  if (!['user', 'observer', 'seller', 'admin', 'checkin'].includes(role)) {
-    return res.status(400).json({ message: 'Role inválida' });
-  }
+  const { eventId } = req.params; // Obtém o eventId dos parâmetros da requisição
 
   try {
-    const users = await User.find({
-      'permissionCategory.role': role
-    }).populate('commercialProfiles'); // Ajuste conforme a necessidade
+    // Busca o evento pelo ID
+    const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'name email'); // Preenche os dados dos usuários
 
-    if (users.length === 0) {
-      return res.status(404).json({ message: 'Nenhum usuário encontrado' });
+    if (!evento) {
+      return res.status(404).json({ message: 'Evento não encontrado.' });
     }
 
-    res.json(users);
+    // Extrai os usuários e suas permissões do evento
+    const usersWithRoles = evento.permissionCategory.map(permission => ({
+      userId: permission.user._id,
+      name: permission.user.name,
+      email: permission.user.email,
+      role: permission.role
+    }));
+
+    return res.status(200).json(usersWithRoles);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Erro ao buscar usuários' });
+    console.error("Erro ao buscar usuários do evento:", error);
+    return res.status(500).json({ message: 'Erro interno do servidor.' });
   }
 };
