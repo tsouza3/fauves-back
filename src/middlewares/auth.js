@@ -30,23 +30,31 @@ const protect = (requiredPermissions) => async (req, res, next) => {
           (perm) => perm.user.toString() === req.user._id.toString()
         );
 
-        // Verifica se o usuário tem alguma permissão requerida
         if (!userPermission && !requiredPermissions.includes('user')) {
           return res.status(403).json({ message: "Acesso negado, você não faz parte da equipe deste evento." });
         }
 
         if (userPermission) {
-          // Permissões do usuário podem ser uma string ou um array de strings
-          const userPermissions = Array.isArray(userPermission.role) ? userPermission.role : [userPermission.role];
+          // `userPermission.role` pode ser uma string ou um array de strings
+          const userRoles = Array.isArray(userPermission.role) ? userPermission.role : [userPermission.role];
           
           // Verifica se o usuário tem pelo menos uma das permissões requeridas
-          const hasPermission = userPermissions.some((permission) =>
-            requiredPermissions.includes(permission)
+          const hasPermission = userRoles.some((role) =>
+            requiredPermissions.includes(role)
           );
 
           if (!hasPermission) {
             return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
           }
+        }
+      } else {
+        // Se não há um eventId, o usuário deve ter uma permissão global, como 'admin'
+        const hasGlobalPermission = req.user.permissionCategory.some(
+          (perm) => requiredPermissions.includes(perm.role)
+        );
+
+        if (!hasGlobalPermission) {
+          return res.status(403).json({ message: "Acesso negado, permissões insuficientes." });
         }
       }
 
