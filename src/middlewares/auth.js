@@ -25,7 +25,7 @@ const protect = (requiredRoles) => async (req, res, next) => {
         return res.status(401).json({ message: "Usuário não encontrado, não autorizado." });
       }
 
-      console.log(`Usuário ${req.user._id} encontrado com a role ${req.user.role}`);
+      console.log(`Usuário ${req.user._id} encontrado com as permissões ${JSON.stringify(req.user.permissionCategory)}`);
 
       const eventId = req.params.eventId || req.body.eventId;
       if (eventId) {
@@ -62,7 +62,8 @@ const protect = (requiredRoles) => async (req, res, next) => {
             return res.status(500).json({ message: "Erro interno do servidor: requiredRoles deve ser um array." });
           }
 
-          const userRoles = Array.isArray(userPermission.role) ? userPermission.role : [userPermission.role];
+          const userRole = userPermission.role;
+          const userRoles = Array.isArray(userRole) ? userRole : [userRole];
           
           const hasPermission = userRoles.some((role) =>
             requiredRoles.some((requiredRole) => roleHierarchy[role] <= roleHierarchy[requiredRole])
