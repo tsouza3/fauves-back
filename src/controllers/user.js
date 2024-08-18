@@ -317,3 +317,25 @@ export const updateUserPermission = async (req, res) => {
   }
 };
 
+export const getUsersByRole = async (req, res) => {
+  const { role } = req.params;
+
+  if (!['user', 'observer', 'seller', 'admin', 'checkin'].includes(role)) {
+    return res.status(400).json({ message: 'Role inválida' });
+  }
+
+  try {
+    const users = await User.find({
+      'permissionCategory.role': role
+    }).populate('commercialProfiles'); // Ajuste conforme a necessidade
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'Nenhum usuário encontrado' });
+    }
+
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao buscar usuários' });
+  }
+};
