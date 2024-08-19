@@ -256,9 +256,6 @@ export const updateUserPermission = async (req, res) => {
       return res.status(400).json({ message: "Role inválido." });
     }
 
-    // Converta eventId para ObjectId se necessário
-    const eventIdObjectId = mongoose.Types.ObjectId(eventId);
-
     // Encontre o usuário pelo email
     const user = await User.findOne({ email });
     if (!user) {
@@ -267,7 +264,7 @@ export const updateUserPermission = async (req, res) => {
     }
 
     // Encontre o evento pelo ID
-    const evento = await Evento.findById(eventIdObjectId);
+    const evento = await Evento.findById(eventId);
     if (!evento) {
       console.log("Evento não encontrado com ID:", eventId);
       return res.status(404).json({ message: "Evento não encontrado." });
@@ -275,7 +272,7 @@ export const updateUserPermission = async (req, res) => {
 
     // Verifique se o usuário já possui uma permissão para o evento
     let userEventPermission = user.permissionCategory.find(
-      (perm) => perm.eventId.toString() === eventIdObjectId.toString()
+      (perm) => perm.eventId.toString() === eventId.toString()
     );
 
     // Atualize ou adicione a permissão do evento no modelo do usuário
@@ -289,7 +286,7 @@ export const updateUserPermission = async (req, res) => {
       }
     } else {
       console.log("Adicionando nova permissão ao usuário.");
-      user.permissionCategory.push({ eventId: eventIdObjectId, role });
+      user.permissionCategory.push({ eventId, role });
     }
 
     await user.save();
