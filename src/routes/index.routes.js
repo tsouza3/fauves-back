@@ -24,7 +24,8 @@ import {
   createTicket,
   deleteTicket,
   updateTicket,
-  emitirCortesia
+  emitirCortesia,
+  listarEventosPorData
 } from "../controllers/ticket.js";
 import { protect } from "../middlewares/auth.js";
 
@@ -107,6 +108,10 @@ router.post(
 );
 
 router.get("/events", protect(['user, admin']), buscarEventosDoUsuario);
+
+router.get("/listareventos", protect(['user']), listarEventosPorData);
+
+
 router.get("/profile/:profileId", protect(['user, admin']), getProfileDataByUser);
 
 // Rota para atualizar a categoria de permissão do usuário
