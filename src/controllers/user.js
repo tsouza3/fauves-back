@@ -243,27 +243,23 @@ export const updateUserPermission = async (req, res) => {
   try {
     const { email, eventId, role } = req.body;
 
-    // Verifique se todos os campos necessários estão presentes
     if (!email || !eventId || !role) {
       console.log("Campos obrigatórios ausentes:", { email, eventId, role });
       return res.status(400).json({ message: "Email, eventId e role são obrigatórios." });
     }
 
-    // Verifique se o role é válido
     const validRoles = ['user', 'observer', 'seller', 'admin', 'checkin'];
     if (!validRoles.includes(role)) {
       console.log("Role inválido:", role);
       return res.status(400).json({ message: "Role inválido." });
     }
 
-    // Encontre o usuário pelo email
     const user = await User.findOne({ email });
     if (!user) {
       console.log("Usuário não encontrado com email:", email);
       return res.status(404).json({ message: "Usuário não encontrado." });
     }
 
-    // Encontre o evento pelo ID
     const evento = await Evento.findById(eventId);
     if (!evento) {
       console.log("Evento não encontrado com ID:", eventId);
@@ -272,10 +268,9 @@ export const updateUserPermission = async (req, res) => {
 
     // Verifique se o usuário já possui uma permissão para o evento
     let userEventPermission = user.permissionCategory.find(
-      (perm) => perm.eventId.toString() === eventId.toString()
+      (perm) => perm && perm.eventId && perm.eventId.toString() === eventId.toString()
     );
 
-    // Atualize ou adicione a permissão do evento no modelo do usuário
     if (userEventPermission) {
       if (userEventPermission.role === role) {
         console.log("Usuário já possui a permissão com o mesmo cargo.");
@@ -293,10 +288,9 @@ export const updateUserPermission = async (req, res) => {
 
     // Verifique se o evento já possui uma permissão para o usuário
     let eventUserPermission = evento.permissionCategory.find(
-      (perm) => perm.user.toString() === user._id.toString()
+      (perm) => perm && perm.user && perm.user.toString() === user._id.toString()
     );
 
-    // Atualize ou adicione a permissão do usuário no modelo do evento
     if (eventUserPermission) {
       if (eventUserPermission.role === role) {
         console.log("Usuário já possui a permissão com o mesmo cargo no evento.");
@@ -314,11 +308,11 @@ export const updateUserPermission = async (req, res) => {
 
     res.status(200).json({ message: "Permissão atualizada com sucesso." });
   } catch (error) {
-    // Captura de erro mais detalhada
     console.error("Erro ao atualizar a permissão:", error);
     res.status(500).json({ message: "Erro interno do servidor." });
   }
 };
+
 export const getUsersByRole = async (req, res) => {
   const { eventId } = req.params; // Obtém o eventId dos parâmetros da requisição
 
