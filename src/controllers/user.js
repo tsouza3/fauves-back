@@ -321,3 +321,28 @@ export const updateUserPermission = async (req, res) => {
     res.status(500).json({ message: "Erro interno do servidor." });
   }
 };
+export const getUsersByRole = async (req, res) => {
+  const { eventId } = req.params; // Obtém o eventId dos parâmetros da requisição
+
+  try {
+    // Busca o evento pelo ID
+    const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'name email'); // Preenche os dados dos usuários
+
+    if (!evento) {
+      return res.status(404).json({ message: 'Evento não encontrado.' });
+    }
+
+    // Extrai os usuários e suas permissões do evento
+    const usersWithRoles = evento.permissionCategory.map(permission => ({
+      userId: permission.user._id,
+      name: permission.user.name,
+      email: permission.user.email,
+      role: permission.role
+    }));
+
+    return res.status(200).json(usersWithRoles);
+  } catch (error) {
+    console.error("Erro ao buscar usuários do evento:", error);
+    return res.status(500).json({ message: 'Erro interno do servidor.' });
+  }
+};
