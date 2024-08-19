@@ -77,7 +77,7 @@ router.put(
   editarEvento
 );
 
-router.get("/event/:eventId", protect(['user', 'admin']), getEventById);
+router.get("/event/:eventId", protect(['user', 'admin', 'checkin']), getEventById);
 
 router.get("/role/:eventId", protect(['user', 'admin']), getUsersByRole);
 
