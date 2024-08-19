@@ -237,7 +237,7 @@ export async function updateUser(req, res) {
 }
 
 export const updateUserPermission = async (req, res) => {
-  console.log("Atualização de permissão iniciada."); // Verifique se a função está sendo chamada
+  console.log("Atualização de permissão iniciada.");
 
   try {
     const { email, eventId, role } = req.body;
@@ -248,8 +248,15 @@ export const updateUserPermission = async (req, res) => {
       return res.status(400).json({ message: "Email, eventId e role são obrigatórios." });
     }
 
-    // Log para verificar o corpo da requisição
-    console.log("Requisição recebida com dados:", { email, eventId, role });
+    // Verifique se o role é válido
+    const validRoles = ['user', 'observer', 'seller', 'admin', 'checkin'];
+    if (!validRoles.includes(role)) {
+      console.log("Role inválido:", role);
+      return res.status(400).json({ message: "Role inválido." });
+    }
+
+    // Converta eventId para ObjectId se necessário
+    const eventIdObjectId = mongoose.Types.ObjectId(eventId);
 
     // Encontre o usuário pelo email
     const user = await User.findOne({ email });
@@ -258,54 +265,52 @@ export const updateUserPermission = async (req, res) => {
       return res.status(404).json({ message: "Usuário não encontrado." });
     }
 
-    // Log para verificar o usuário encontrado
-    console.log("Usuário encontrado:", user);
-
     // Encontre o evento pelo ID
-    const evento = await Evento.findById(eventId);
+    const evento = await Evento.findById(eventIdObjectId);
     if (!evento) {
       console.log("Evento não encontrado com ID:", eventId);
       return res.status(404).json({ message: "Evento não encontrado." });
     }
 
-    // Log para verificar o evento encontrado
-    console.log("Evento encontrado:", evento);
-
-    // Atualize ou adicione a permissão do evento no modelo do usuário
+    // Verifique se o usuário já possui uma permissão para o evento
     let userEventPermission = user.permissionCategory.find(
-      (perm) => perm.eventId.toString() === eventId.toString()
+      (perm) => perm.eventId.toString() === eventIdObjectId.toString()
     );
 
-    // Log para verificar a permissão existente
-    console.log("Permissão encontrada no usuário:", userEventPermission);
-
+    // Atualize ou adicione a permissão do evento no modelo do usuário
     if (userEventPermission) {
-      userEventPermission.role = role;
+      if (userEventPermission.role === role) {
+        console.log("Usuário já possui a permissão com o mesmo cargo.");
+        return res.status(400).json({ message: "O usuário já possui a permissão com o mesmo cargo." });
+      } else {
+        console.log("Atualizando permissão do usuário.");
+        userEventPermission.role = role;
+      }
     } else {
-      user.permissionCategory.push({ eventId, role });
+      console.log("Adicionando nova permissão ao usuário.");
+      user.permissionCategory.push({ eventId: eventIdObjectId, role });
     }
-
-    // Log antes de salvar o usuário
-    console.log("Atualizando permissão no usuário:", user);
 
     await user.save();
 
-    // Atualize ou adicione a permissão do usuário no modelo do evento
+    // Verifique se o evento já possui uma permissão para o usuário
     let eventUserPermission = evento.permissionCategory.find(
       (perm) => perm.user.toString() === user._id.toString()
     );
 
-    // Log para verificar a permissão existente no evento
-    console.log("Permissão encontrada no evento:", eventUserPermission);
-
+    // Atualize ou adicione a permissão do usuário no modelo do evento
     if (eventUserPermission) {
-      eventUserPermission.role = role;
+      if (eventUserPermission.role === role) {
+        console.log("Usuário já possui a permissão com o mesmo cargo no evento.");
+        return res.status(400).json({ message: "O usuário já possui a permissão com o mesmo cargo no evento." });
+      } else {
+        console.log("Atualizando permissão do usuário no evento.");
+        eventUserPermission.role = role;
+      }
     } else {
+      console.log("Adicionando nova permissão ao evento.");
       evento.permissionCategory.push({ user: user._id, role });
     }
-
-    // Log antes de salvar o evento
-    console.log("Atualizando permissão no evento:", evento);
 
     await evento.save();
 
@@ -314,31 +319,5 @@ export const updateUserPermission = async (req, res) => {
     // Captura de erro mais detalhada
     console.error("Erro ao atualizar a permissão:", error);
     res.status(500).json({ message: "Erro interno do servidor." });
-  }
-};
-
-export const getUsersByRole = async (req, res) => {
-  const { eventId } = req.params; // Obtém o eventId dos parâmetros da requisição
-
-  try {
-    // Busca o evento pelo ID
-    const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'name email'); // Preenche os dados dos usuários
-
-    if (!evento) {
-      return res.status(404).json({ message: 'Evento não encontrado.' });
-    }
-
-    // Extrai os usuários e suas permissões do evento
-    const usersWithRoles = evento.permissionCategory.map(permission => ({
-      userId: permission.user._id,
-      name: permission.user.name,
-      email: permission.user.email,
-      role: permission.role
-    }));
-
-    return res.status(200).json(usersWithRoles);
-  } catch (error) {
-    console.error("Erro ao buscar usuários do evento:", error);
-    return res.status(500).json({ message: 'Erro interno do servidor.' });
   }
 };
