@@ -1,9 +1,7 @@
-import mongoose from "mongoose";
-
 const eventoSchema = new mongoose.Schema({
   nomeEvento: String,
-  dataInicio: String,
-  dataTermino: String,
+  dataInicio: Date,  // Alterado para Date
+  dataTermino: Date,  // Alterado para Date
   categoria: String,
   localDoEvento: String,
   producaoEvento: {
