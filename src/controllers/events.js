@@ -27,11 +27,15 @@ export const criarEvento = async (req, res) => {
       selectedCommercialProfileId,
     } = req.body;
 
+    // Conversão das datas de string para objeto Date
+    const dataInicioFormatada = new Date(dataInicio.replace(" às ", "T"));
+    const dataTerminoFormatada = new Date(dataTermino.replace(" às ", "T"));
+
     // Criação do evento
     const novoEvento = new Evento({
       nomeEvento,
-      dataInicio,
-      dataTermino,
+      dataInicio: dataInicioFormatada,
+      dataTermino: dataTerminoFormatada,
       categoria,
       localDoEvento,
       emailEvento,
