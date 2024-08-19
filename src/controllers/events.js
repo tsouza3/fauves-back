@@ -67,6 +67,35 @@ export const criarEvento = async (req, res) => {
   }
 };
 
+
+export const listarEventosPorData = async (req, res) => {
+  try {
+    const { filtro } = req.query;
+
+    const agora = new Date();
+
+    let eventos;
+
+    if (filtro === 'anteriores') {
+      eventos = await Evento.find({
+        dataTermino: { $lt: agora }
+      });
+    } else if (filtro === 'atuais') {
+      eventos = await Evento.find({
+        dataInicio: { $gte: agora }
+      });
+    } else {
+      // Se não houver filtro ou filtro inválido, retornar todos os eventos
+      eventos = await Evento.find();
+    }
+
+    res.status(200).json(eventos);
+  } catch (error) {
+    console.error('Erro ao listar eventos:', error);
+    res.status(500).json({ error: 'Erro ao listar eventos' });
+  }
+};
+
 export const editarEvento = async (req, res) => {
   try {
     const { eventId } = req.params;
