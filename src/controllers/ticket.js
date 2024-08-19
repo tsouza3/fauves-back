@@ -175,6 +175,7 @@ export const updateTicket = async (req, res) => {
   }
 };
 
+
 export const emitirCortesia = async (req, res) => {
   const { email, event_Id, ticket_Id } = req.body;
 
@@ -205,7 +206,11 @@ export const emitirCortesia = async (req, res) => {
     console.log('Identificador único gerado para o QR Code:', uniqueId);
 
     // Criar a URL do QR Code incluindo o event_Id, user_Id, ticket_Id e uniqueId
-    const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user._id}/${ticket_Id}#${uniqueId}`);
+    const qrCodeUrl = `https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user._id}/${ticket_Id}#${uniqueId}`;
+    console.log('URL do QR Code gerada:', qrCodeUrl);
+
+    // Gerar o QR Code
+    const qrCodeData = await QRCode.toDataURL(qrCodeUrl);
     console.log('QR Code gerado com sucesso');
 
     // Atualizar o ingresso com o QR Code gerado
