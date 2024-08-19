@@ -70,31 +70,31 @@ export const criarEvento = async (req, res) => {
 
 export const listarEventosPorData = async (req, res) => {
   try {
-    const { filtro } = req.query;
-
-    const agora = new Date();
+    const { profileId, tipo } = req.query;
+    const hoje = new Date();
 
     let eventos;
-
-    if (filtro === 'anteriores') {
+    if (tipo === "atuais") {
+      // Buscar eventos futuros
       eventos = await Evento.find({
-        dataTermino: { $lt: agora }
-      });
-    } else if (filtro === 'atuais') {
+        user: profileId,
+        dataInicio: { $gte: hoje },
+      }).sort({ dataInicio: 1 });
+    } else if (tipo === "anteriores") {
+      // Buscar eventos passados
       eventos = await Evento.find({
-        dataInicio: { $gte: agora }
-      });
-    } else {
-      // Se não houver filtro ou filtro inválido, retornar todos os eventos
-      eventos = await Evento.find();
+        user: profileId,
+        dataTermino: { $lt: hoje },
+      }).sort({ dataInicio: -1 });
     }
 
     res.status(200).json(eventos);
   } catch (error) {
-    console.error('Erro ao listar eventos:', error);
-    res.status(500).json({ error: 'Erro ao listar eventos' });
+    console.error("Erro ao listar eventos:", error);
+    res.status(500).json({ message: "Erro ao listar eventos." });
   }
 };
+
 
 export const editarEvento = async (req, res) => {
   try {
