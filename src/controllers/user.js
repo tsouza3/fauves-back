@@ -2,6 +2,7 @@ import Evento from "../models/event.js";
 import User from "../models/user.js";
 import generateToken from "../utils/generateToken.js";
 import CommercialProfile from "../models/commercialProfile.js";
+import mongoose from 'mongoose'
 
 export async function create(req, res) {
   const { name, email, password } = req.body;
