@@ -19,13 +19,14 @@ import {
   deleteEvent,
   buscarEventosPorPerfilComercial,
   editarEvento,
+listarEventosPorData
+
 } from "../controllers/events.js";
 import {
   createTicket,
   deleteTicket,
   updateTicket,
   emitirCortesia,
-  listarEventosPorData
 } from "../controllers/ticket.js";
 import { protect } from "../middlewares/auth.js";
 
