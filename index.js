@@ -76,7 +76,7 @@ app.post("/pix", async (req, res) => {
         res.status(200).json({
             txid: cobResponse.data.txid,
             cobranca: cobResponse.data,
-            qrCode: `data:image/png;base64,${qrCodeBase64}`, // Retorna o QR code em base64 diretamente
+            qrCode: `${qrCodeBase64}`, // Retorna o QR code em base64 diretamente
             pixCopiaCola: pixCopiaECola,
         });
     } catch (error) {
