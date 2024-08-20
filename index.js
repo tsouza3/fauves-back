@@ -85,6 +85,45 @@ app.post("/pix", async (req, res) => {
     }
 });
 
+const consultarCobranca = async (txid) => {
+    try {
+        const reqGN = await GNRequest();
+        const response = await reqGN.get(`/v2/cob/${txid}`);
+        return response.data;
+    } catch (error) {
+        console.error(`Erro ao consultar a cobrança com TXID: ${txid}`, error.message);
+        throw error;
+    }
+};
+
+router.get("/transacoes/:eventId", async (req, res) => {
+    const { eventId } = req.params;
+
+    try {
+        const tickets = await Ticket.find({ event: eventId });
+
+        const cobrancasPagas = await Promise.all(
+            tickets.map(async (ticket) => {
+                const transacoes = await Promise.all(
+                    ticket.txid.map(async (txid) => {
+                        const cobranca = await consultarCobranca(txid);
+                        return cobranca;
+                    })
+                );
+                return transacoes;
+            })
+        );
+
+        // Filtrando apenas as cobranças que estão pagas
+        const cobrancasPagasFiltradas = cobrancasPagas.flat().filter(cobranca => cobranca.status === 'CONCLUIDA');
+
+        res.status(200).json({ cobrancasPagas: cobrancasPagasFiltradas });
+    } catch (error) {
+        console.error("Erro ao buscar transações:", error.message);
+        res.status(500).json({ error: "Falha ao buscar transações" });
+    }
+});
+
 
 app.post('/paymentwebhook(/pix)?', async (req, res) => {
     const { txid } = req.body.pix[0];
