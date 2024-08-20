@@ -55,11 +55,15 @@ app.post("/pix", async (req, res) => {
 
         // Faz a requisição para obter o QR code em base64
         const qrCodeResponse = await axios.get(locationUrl, {
-            responseType: 'text', // Obtendo o conteúdo como texto
+            responseType: 'arraybuffer', // Obtendo o conteúdo como arraybuffer
         });
 
-        // O QR Code em base64 está diretamente no conteúdo da resposta
-        const qrCodeBase64 = qrCodeResponse.data;
+        // Converte o arraybuffer para base64
+        const qrCodeBase64 = Buffer.from(qrCodeResponse.data, 'binary').toString('base64');
+
+        // Log do URL do QR Code e conteúdo base64
+        console.log("URL do QR Code:", locationUrl);
+        console.log("Conteúdo do QR Code em Base64:", qrCodeBase64);
 
         // Armazenar os IDs necessários em app.locals para acesso no webhook
         app.locals.cobrancaTxid = cobResponse.data.txid;
@@ -80,6 +84,7 @@ app.post("/pix", async (req, res) => {
         res.status(500).json({ error: "Falha ao gerar a cobrança PIX" });
     }
 });
+
 
 
 
