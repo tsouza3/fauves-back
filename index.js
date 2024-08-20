@@ -87,23 +87,38 @@ app.post("/pix", async (req, res) => {
 
 export const consultarCobranca = async (txid) => {
     try {
+        console.log(`Consultando cobrança com TXID: ${txid}`); // Log do TXID
         const reqGN = await GNRequest();
         const response = await reqGN.get(`/v2/cob/${txid}`);
         return response.data;
     } catch (error) {
-        console.error(`Erro ao consultar a cobrança com TXID: ${txid}`, error.message);
+        if (error.response) {
+            // A resposta da solicitação foi recebida com um status code fora da faixa de 2xx
+            console.error(`Erro ao consultar a cobrança com TXID: ${txid}. Status: ${error.response.status}. Dados: ${JSON.stringify(error.response.data)}`);
+        } else if (error.request) {
+            // A solicitação foi feita, mas sem resposta
+            console.error(`Erro ao consultar a cobrança com TXID: ${txid}. Sem resposta: ${error.request}`);
+        } else {
+            // Outro erro
+            console.error(`Erro ao consultar a cobrança com TXID: ${txid}. Erro: ${error.message}`);
+        }
         throw error;
     }
 };
 
+// Rota para buscar transações por evento
 app.get("/transacoes/:eventId", async (req, res) => {
     const { eventId } = req.params;
 
     try {
+        console.log(`Buscando tickets para o evento com ID: ${eventId}`); // Log do eventId
         const tickets = await Ticket.find({ event: eventId });
+
+        console.log(`Tickets encontrados: ${JSON.stringify(tickets)}`); // Log dos tickets encontrados
 
         const cobrancasPagas = await Promise.all(
             tickets.map(async (ticket) => {
+                console.log(`Buscando cobranças para o ticket com TXIDs: ${JSON.stringify(ticket.txid)}`); // Log dos TXIDs
                 const transacoes = await Promise.all(
                     ticket.txid.map(async (txid) => {
                         const cobranca = await consultarCobranca(txid);
@@ -117,13 +132,14 @@ app.get("/transacoes/:eventId", async (req, res) => {
         // Filtrando apenas as cobranças que estão pagas
         const cobrancasPagasFiltradas = cobrancasPagas.flat().filter(cobranca => cobranca.status === 'CONCLUIDA');
 
+        console.log(`Cobranças pagas filtradas: ${JSON.stringify(cobrancasPagasFiltradas)}`); // Log das cobranças pagas
+
         res.status(200).json({ cobrancasPagas: cobrancasPagasFiltradas });
     } catch (error) {
         console.error("Erro ao buscar transações:", error.message);
         res.status(500).json({ error: "Falha ao buscar transações" });
     }
 });
-
 
 app.post('/paymentwebhook(/pix)?', async (req, res) => {
     const { txid } = req.body.pix[0];
