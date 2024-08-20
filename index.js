@@ -49,9 +49,15 @@ app.post("/pix", async (req, res) => {
         const cobResponse = await reqGN.post("/v2/cob", dataCob);
         const locationUrl = cobResponse.data.loc.location;
 
+        // Certifique-se de que a URL está completa e correta
         const qrCodeResponse = await axios.get(`https://${locationUrl}`, {
             responseType: "arraybuffer",
         });
+
+        // Verifique o tipo de resposta recebida
+        if (!qrCodeResponse.data) {
+            throw new Error("QR Code não encontrado.");
+        }
 
         const qrCodeBuffer = Buffer.from(qrCodeResponse.data, "binary");
         const qrCodeBase64 = qrCodeBuffer.toString("base64");
@@ -79,11 +85,10 @@ app.post("/pix", async (req, res) => {
             pixCopiaCola: cobResponse.data.pixCopiaECola,
         });
     } catch (error) {
-        console.error("Erro ao gerar a cobrança PIX:", error);
+        console.error("Erro ao gerar a cobrança PIX:", error.message);
         res.status(500).json({ error: "Falha ao gerar a cobrança PIX" });
     }
 });
-
 
 app.post('/paymentwebhook(/pix)?', async (req, res) => {
     const { txid } = req.body.pix[0];
