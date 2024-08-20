@@ -36,7 +36,7 @@ app.post("/pix", async (req, res) => {
         return res.status(400).json({ error: "Parâmetros obrigatórios não fornecidos" });
     }
 
-    const reqGN = await reqGNAlready;
+    const reqGN = await reqGNAlready; // Assumindo que reqGNAlready é uma instância de axios configurada para sua API
 
     const dataCob = {
         calendario: { expiracao: 3600 },
@@ -46,20 +46,23 @@ app.post("/pix", async (req, res) => {
     };
 
     try {
+        // Faz a solicitação para criar a cobrança PIX
         const cobResponse = await reqGN.post("/v2/cob", dataCob);
-        const locationUrl = `https://${cobResponse.data.loc.location}`;
+
+        // Obtém o URL do QR code da resposta
+        const locationUrl = cobResponse.data.loc.location;
         const pixCopiaECola = cobResponse.data.pixCopiaECola;
 
-        // Fazer requisição para obter o QR Code
-        const qrCodeResponse = await axios.get(locationUrl, {
-            responseType: "arraybuffer", // Obtendo o conteúdo como arraybuffer
+        // Faz a requisição para obter o QR code
+        const qrCodeResponse = await axios.get(`https://${locationUrl}`, {
+            responseType: 'arraybuffer', // Obtendo o conteúdo como arraybuffer
         });
 
-        // Converter o arraybuffer diretamente para base64
-        const qrCodeBase64 = Buffer.from(qrCodeResponse.data, "binary").toString("base64");
+        // Converte o arraybuffer para base64
+        const qrCodeBase64 = Buffer.from(qrCodeResponse.data, 'binary').toString('base64');
 
         // Log do URL do QR Code e conteúdo base64
-        console.log("URL do QR Code:", locationUrl);
+        console.log("URL do QR Code:", `https://${locationUrl}`);
         console.log("Conteúdo do QR Code em Base64:", qrCodeBase64);
 
         // Armazenar os IDs necessários em app.locals para acesso no webhook
@@ -69,10 +72,11 @@ app.post("/pix", async (req, res) => {
         app.locals.quantidadeIngressos = quantidadeTickets;
         app.locals.ticket_Id = new mongoose.Types.ObjectId(ticketId);
 
+        // Retorna a resposta com o QR code em base64
         res.status(200).json({
             txid: cobResponse.data.txid,
             cobranca: cobResponse.data,
-            qrCode: qrCodeBase64, // Retornando o conteúdo base64 diretamente
+            qrCode: `data:image/png;base64,${qrCodeBase64}`, // Retorna o conteúdo base64 diretamente
             pixCopiaCola: pixCopiaECola,
         });
     } catch (error) {
@@ -80,7 +84,6 @@ app.post("/pix", async (req, res) => {
         res.status(500).json({ error: "Falha ao gerar a cobrança PIX" });
     }
 });
-
 
 
 app.post('/paymentwebhook(/pix)?', async (req, res) => {
