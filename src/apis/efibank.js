@@ -1,4 +1,3 @@
-
 import fs from "fs";
 import path from "path";
 import https from "https";
@@ -15,10 +14,13 @@ const agent = new https.Agent({
   passphrase: "",
 });
 
+let accessToken = null;
+let tokenExpiry = null;
+
 const authenticate = async () => {
   try {
     const credentials = Buffer.from(
-      `${process.env.GN_CLIENT_ID}:${process.env.GN_CLIENT_SECRET}`,
+      `${process.env.GN_CLIENT_ID}:${process.env.GN_CLIENT_SECRET}`
     ).toString("base64");
 
     const authResponse = await axios({
@@ -34,23 +36,30 @@ const authenticate = async () => {
       },
     });
 
-    return authResponse.data;
+    accessToken = authResponse.data.access_token;
+    tokenExpiry = Date.now() + (authResponse.data.expires_in * 1000); // expires_in is in seconds
   } catch (error) {
     console.error("Erro ao autenticar:", error.message);
     throw error;
   }
 };
 
+const getAccessToken = async () => {
+  if (!accessToken || Date.now() > tokenExpiry) {
+    await authenticate();
+  }
+  return accessToken;
+};
+
 export const GNRequest = async () => {
   try {
-    const authResponse = await authenticate();
-    const accessToken = authResponse.access_token;
+    const token = await getAccessToken();
 
     const reqGN = axios.create({
       baseURL: process.env.GN_ENDPOINT,
       httpsAgent: agent,
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
