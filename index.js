@@ -52,7 +52,7 @@ app.post("/pix", async (req, res) => {
         // Obtém o PIX copia e cola da resposta
         const pixCopiaECola = cobResponse.data.pixCopiaECola;
 
-        // Gera o QR code a partir do PIX copia e cola
+        // Gera o QR code em base64
         const qrCodeBase64 = await QRCode.toDataURL(pixCopiaECola);
 
         // Armazenar os IDs necessários em app.locals para acesso no webhook
@@ -66,13 +66,14 @@ app.post("/pix", async (req, res) => {
         res.status(200).json({
             txid: cobResponse.data.txid,
             cobranca: cobResponse.data,
-            qrCode: qrCodeBase64, // QR Code gerado diretamente
+            qrCode: qrCodeBase64, // QR Code em base64
             pixCopiaCola: pixCopiaECola,
         });
     } catch (error) {
         console.error("Erro ao gerar a cobrança PIX:", error.message);
         res.status(500).json({ error: "Falha ao gerar a cobrança PIX" });
     }
+});
 });
 
 
