@@ -50,21 +50,17 @@ app.post("/pix", async (req, res) => {
         const locationUrl = cobResponse.data.loc.location;
         const pixCopiaECola = cobResponse.data.pixCopiaECola;
 
-        // Obter o QR Code diretamente do link `location`
+        // Log do URL do QR Code
         const qrCodeUrl = `https://${locationUrl}`;
         console.log("URL do QR Code:", qrCodeUrl);
 
         // Fazer requisição para obter o QR Code
         const qrCodeResponse = await axios.get(qrCodeUrl, {
-            responseType: "arraybuffer",
+            responseType: "text", // Obtendo o conteúdo diretamente como texto
         });
 
-        // Converter a resposta para Base64
-        const qrCodeBuffer = Buffer.from(qrCodeResponse.data, "binary");
-        const qrCodeBase64 = qrCodeBuffer.toString("base64");
-
-        // Log do QR Code em Base64
-        console.log("QR Code em Base64:", qrCodeBase64);
+        // Log do conteúdo do QR Code
+        console.log("Conteúdo do QR Code:", qrCodeResponse.data);
 
         // Armazenar os IDs necessários em app.locals para acesso no webhook
         app.locals.cobrancaTxid = cobResponse.data.txid;
@@ -76,7 +72,7 @@ app.post("/pix", async (req, res) => {
         res.status(200).json({
             txid: cobResponse.data.txid,
             cobranca: cobResponse.data,
-            qrCode: qrCodeBase64,
+            qrCode: qrCodeResponse.data, // Retornando o conteúdo base64 diretamente
             pixCopiaCola: pixCopiaECola,
         });
     } catch (error) {
@@ -84,6 +80,7 @@ app.post("/pix", async (req, res) => {
         res.status(500).json({ error: "Falha ao gerar a cobrança PIX" });
     }
 });
+
 
 app.post('/paymentwebhook(/pix)?', async (req, res) => {
     const { txid } = req.body.pix[0];
