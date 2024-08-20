@@ -47,20 +47,20 @@ app.post("/pix", async (req, res) => {
 
     try {
         const cobResponse = await reqGN.post("/v2/cob", dataCob);
-        const locationUrl = cobResponse.data.loc.location;
+        const locationUrl = `https://${cobResponse.data.loc.location}`;
         const pixCopiaECola = cobResponse.data.pixCopiaECola;
 
-        // Log do URL do QR Code
-        const qrCodeUrl = `https://${locationUrl}`;
-        console.log("URL do QR Code:", qrCodeUrl);
-
         // Fazer requisição para obter o QR Code
-        const qrCodeResponse = await axios.get(qrCodeUrl, {
-            responseType: "text", // Obtendo o conteúdo diretamente como texto
+        const qrCodeResponse = await axios.get(locationUrl, {
+            responseType: "arraybuffer", // Obtendo o conteúdo como arraybuffer
         });
 
-        // Log do conteúdo do QR Code
-        console.log("Conteúdo do QR Code:", qrCodeResponse.data);
+        // Converter o arraybuffer diretamente para base64
+        const qrCodeBase64 = Buffer.from(qrCodeResponse.data, "binary").toString("base64");
+
+        // Log do URL do QR Code e conteúdo base64
+        console.log("URL do QR Code:", locationUrl);
+        console.log("Conteúdo do QR Code em Base64:", qrCodeBase64);
 
         // Armazenar os IDs necessários em app.locals para acesso no webhook
         app.locals.cobrancaTxid = cobResponse.data.txid;
@@ -72,7 +72,7 @@ app.post("/pix", async (req, res) => {
         res.status(200).json({
             txid: cobResponse.data.txid,
             cobranca: cobResponse.data,
-            qrCode: qrCodeResponse.data, // Retornando o conteúdo base64 diretamente
+            qrCode: qrCodeBase64, // Retornando o conteúdo base64 diretamente
             pixCopiaCola: pixCopiaECola,
         });
     } catch (error) {
@@ -80,6 +80,7 @@ app.post("/pix", async (req, res) => {
         res.status(500).json({ error: "Falha ao gerar a cobrança PIX" });
     }
 });
+
 
 
 app.post('/paymentwebhook(/pix)?', async (req, res) => {
