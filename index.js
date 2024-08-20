@@ -49,18 +49,23 @@ app.post("/pix", async (req, res) => {
         const cobResponse = await reqGN.post("/v2/cob", dataCob);
         const locationUrl = cobResponse.data.loc.location;
 
-        // Certifique-se de que a URL está completa e correta
+        console.log("Resposta da Cobrança PIX:", cobResponse.data);
+        console.log("URL do QR Code:", `https://${locationUrl}`);
+
+        // Fazer requisição para obter o QR Code
         const qrCodeResponse = await axios.get(`https://${locationUrl}`, {
             responseType: "arraybuffer",
         });
 
-        // Verifique o tipo de resposta recebida
-        if (!qrCodeResponse.data) {
-            throw new Error("QR Code não encontrado.");
-        }
+        // Verifique a resposta do QR Code
+        console.log("Resposta do QR Code (buffer):", qrCodeResponse.data);
 
+        // Converter para Base64
         const qrCodeBuffer = Buffer.from(qrCodeResponse.data, "binary");
         const qrCodeBase64 = qrCodeBuffer.toString("base64");
+
+        // Log do QR Code em Base64
+        console.log("QR Code em Base64:", qrCodeBase64);
 
         const cobrancaTxid = cobResponse.data.txid;
         const user_Id = new mongoose.Types.ObjectId(userId);
@@ -69,7 +74,6 @@ app.post("/pix", async (req, res) => {
         const ticket_Id = new mongoose.Types.ObjectId(ticketId);
 
         console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos, ticket_Id);
-        console.log("Cobrança PIX criada:", cobResponse.data);
 
         // Armazenar os IDs necessários em app.locals para acesso no webhook
         app.locals.cobrancaTxid = cobrancaTxid;
