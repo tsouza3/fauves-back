@@ -85,7 +85,7 @@ app.post("/pix", async (req, res) => {
     }
 });
 
-const consultarCobranca = async (txid) => {
+export const consultarCobranca = async (txid) => {
     try {
         const reqGN = await GNRequest();
         const response = await reqGN.get(`/v2/cob/${txid}`);
@@ -96,7 +96,7 @@ const consultarCobranca = async (txid) => {
     }
 };
 
-router.get("/transacoes/:eventId", async (req, res) => {
+app.get("/transacoes/:eventId", async (req, res) => {
     const { eventId } = req.params;
 
     try {
