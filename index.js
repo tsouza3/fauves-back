@@ -48,45 +48,36 @@ app.post("/pix", async (req, res) => {
     try {
         const cobResponse = await reqGN.post("/v2/cob", dataCob);
         const locationUrl = cobResponse.data.loc.location;
+        const pixCopiaECola = cobResponse.data.pixCopiaECola;
 
-        console.log("Resposta da Cobrança PIX:", cobResponse.data);
-        console.log("URL do QR Code:", `https://${locationUrl}`);
+        // Obter o QR Code diretamente do link `location`
+        const qrCodeUrl = `https://${locationUrl}`;
+        console.log("URL do QR Code:", qrCodeUrl);
 
         // Fazer requisição para obter o QR Code
-        const qrCodeResponse = await axios.get(`https://${locationUrl}`, {
+        const qrCodeResponse = await axios.get(qrCodeUrl, {
             responseType: "arraybuffer",
         });
 
-        // Verifique a resposta do QR Code
-        console.log("Resposta do QR Code (buffer):", qrCodeResponse.data);
-
-        // Converter para Base64
+        // Converter a resposta para Base64
         const qrCodeBuffer = Buffer.from(qrCodeResponse.data, "binary");
         const qrCodeBase64 = qrCodeBuffer.toString("base64");
 
         // Log do QR Code em Base64
         console.log("QR Code em Base64:", qrCodeBase64);
 
-        const cobrancaTxid = cobResponse.data.txid;
-        const user_Id = new mongoose.Types.ObjectId(userId);
-        const event_Id = new mongoose.Types.ObjectId(eventId);
-        const quantidadeIngressos = quantidadeTickets;
-        const ticket_Id = new mongoose.Types.ObjectId(ticketId);
-
-        console.log(user_Id, event_Id, cobrancaTxid, quantidadeIngressos, ticket_Id);
-
         // Armazenar os IDs necessários em app.locals para acesso no webhook
-        app.locals.cobrancaTxid = cobrancaTxid;
-        app.locals.user_Id = user_Id;
-        app.locals.event_Id = event_Id;
-        app.locals.quantidadeIngressos = quantidadeIngressos;
-        app.locals.ticket_Id = ticket_Id;
+        app.locals.cobrancaTxid = cobResponse.data.txid;
+        app.locals.user_Id = new mongoose.Types.ObjectId(userId);
+        app.locals.event_Id = new mongoose.Types.ObjectId(eventId);
+        app.locals.quantidadeIngressos = quantidadeTickets;
+        app.locals.ticket_Id = new mongoose.Types.ObjectId(ticketId);
 
         res.status(200).json({
-            txid: cobrancaTxid,
+            txid: cobResponse.data.txid,
             cobranca: cobResponse.data,
             qrCode: qrCodeBase64,
-            pixCopiaCola: cobResponse.data.pixCopiaECola,
+            pixCopiaCola: pixCopiaECola,
         });
     } catch (error) {
         console.error("Erro ao gerar a cobrança PIX:", error.message);
