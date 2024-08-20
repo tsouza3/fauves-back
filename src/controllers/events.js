@@ -77,13 +77,13 @@ export const listarEventosPorData = async (req, res) => {
     if (tipo === "atuais") {
       // Buscar eventos futuros
       eventos = await Evento.find({
-        user: profileId,
+        producaoEvento: profileId,
         dataInicio: { $gte: hoje },
       }).sort({ dataInicio: 1 });
     } else if (tipo === "anteriores") {
       // Buscar eventos passados
       eventos = await Evento.find({
-        user: profileId,
+        producaoEvento: profileId,
         dataTermino: { $lt: hoje },
       }).sort({ dataInicio: -1 });
     }
