@@ -163,7 +163,7 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                     // Gerar um identificador único para cada QR Code
                     const uniqueId = uuidv4();
                     // Usar o ticket_Id e o uniqueId para criar a URL do QR Code
-                    const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user_Id}/${ticket_Id}#${uniqueId}`);
+                    const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user_Id}/${ticket_Id}/#${uniqueId}`);
                     qrCodes.push(qrCodeData);
                     console.log('QR Code gerado com sucesso para ingresso:', j + 1, 'Identificador:', uniqueId);
                 }
