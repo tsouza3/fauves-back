@@ -53,13 +53,13 @@ app.post("/pix", async (req, res) => {
         const locationUrl = `https://${cobResponse.data.loc.location}`;
         const pixCopiaECola = cobResponse.data.pixCopiaECola;
 
-        // Faz a requisição para obter o QR code em base64
+        // Faz a requisição para obter o QR code como um arquivo
         const qrCodeResponse = await axios.get(locationUrl, {
-            responseType: 'arraybuffer', // Obtendo o conteúdo como arraybuffer
+            responseType: 'text', // Assumindo que o conteúdo retornado é texto
         });
 
-        // Converte o arraybuffer para base64
-        const qrCodeBase64 = Buffer.from(qrCodeResponse.data, 'binary').toString('base64');
+        // O QR code é retornado diretamente no conteúdo da resposta
+        const qrCodeBase64 = qrCodeResponse.data;
 
         // Log do URL do QR Code e conteúdo base64
         console.log("URL do QR Code:", locationUrl);
