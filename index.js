@@ -74,7 +74,6 @@ app.post("/pix", async (req, res) => {
         res.status(500).json({ error: "Falha ao gerar a cobrança PIX" });
     }
 });
-});
 
 
 app.post('/paymentwebhook(/pix)?', async (req, res) => {
