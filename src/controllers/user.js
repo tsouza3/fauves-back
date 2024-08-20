@@ -314,17 +314,15 @@ export const updateUserPermission = async (req, res) => {
 };
 
 export const getUsersByRole = async (req, res) => {
-  const { eventId } = req.params; // Obtém o eventId dos parâmetros da requisição
+  const { eventId } = req.params;
 
   try {
-    // Busca o evento pelo ID
-    const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'name email'); // Preenche os dados dos usuários
+    const evento = await Evento.findById(eventId).populate('permissionCategory.user', 'name email');
 
     if (!evento) {
       return res.status(404).json({ message: 'Evento não encontrado.' });
     }
 
-    // Extrai os usuários e suas permissões do evento
     const usersWithRoles = evento.permissionCategory.map(permission => ({
       userId: permission.user._id,
       name: permission.user.name,
@@ -332,6 +330,7 @@ export const getUsersByRole = async (req, res) => {
       role: permission.role
     }));
 
+    console.log('Users with Roles:', usersWithRoles); // Verifique os dados que estão sendo enviados
     return res.status(200).json(usersWithRoles);
   } catch (error) {
     console.error("Erro ao buscar usuários do evento:", error);
