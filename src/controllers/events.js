@@ -125,6 +125,8 @@ export const editarEvento = async (req, res) => {
       return res.status(403).json({ message: "Acesso negado" });
     }
 
+    console.log("Dados do evento antes da atualização:", evento);
+
     evento.nomeEvento = nomeEvento || evento.nomeEvento;
     evento.dataInicio = dataInicio || evento.dataInicio;
     evento.dataTermino = dataTermino || evento.dataTermino;
@@ -136,7 +138,11 @@ export const editarEvento = async (req, res) => {
       evento.capaEvento = req.file.path;
     }
 
+    console.log("Dados do evento após a atualização:", evento);
+
     const eventoAtualizado = await evento.save();
+
+    console.log("Evento atualizado:", eventoAtualizado);
 
     res.status(200).json(eventoAtualizado);
   } catch (error) {
