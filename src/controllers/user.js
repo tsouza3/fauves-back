@@ -26,40 +26,7 @@ export async function create(req, res) {
   }
 }
 
-export async function update(req, res) {
-  try {
-    const user = await User.findById(req.params.id);
 
-    if (!user) {
-      return res.status(404).json({ error: "Usuário não encontrado." });
-    }
-
-    const fieldsToUpdate = [
-      "name",
-      "email",
-      "cpf",
-      "celular",
-      "dataNascimento",
-      "cep",
-      "logradouro",
-      "bairro",
-      "cidade",
-      "uf",
-      "numero",
-    ];
-
-    fieldsToUpdate.forEach((field) => {
-      if (req.body[field]) {
-        user[field] = req.body[field];
-      }
-    });
-
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    res.status(500).json({ error: "Erro interno do servidor." });
-  }
-}
 
 export async function login(req, res) {
   const { email, password } = req.body;
@@ -232,7 +199,8 @@ export async function getCommercialProfilesByUser(req, res) {
   }
 }
 
-try {
+export const editUserProfile = async (req, res) => {
+  try {
     const userId = req.user._id; // Assumindo que o ID do usuário está no token JWT
     const {
       name,
@@ -273,6 +241,7 @@ try {
     console.error("Erro ao atualizar perfil do usuário:", error);
     res.status(500).json({ message: "Erro ao atualizar perfil do usuário" });
   }
+};
 
 export const updateUserPermission = async (req, res) => {
   console.log("Atualização de permissão iniciada.");
