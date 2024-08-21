@@ -4,7 +4,7 @@ import path from "path";
 import {
   create,
   login,
-  update,
+  editUserProfile,
   getProfileData,
   createProductorProfile,
   getProfileDataByUser,
@@ -59,8 +59,8 @@ router.post("/register", create);
 router.post("/login", login);
 
 // Rotas de perfil
-router.put("/editprofile", protect(['user', 'admin']), update); // Permissão para atualizar perfil
-router.get("/profile", protect(['user', 'admin']), getProfileData); // Permissão para acessar perfil
+router.put("/editprofile", protect(['user', 'admin']), editUserProfile); 
+router.get("/profile", protect(['user', 'admin']), getProfileData);
 
 // Rotas de evento
 router.post(
