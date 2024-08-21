@@ -108,6 +108,24 @@ export const consultarCobranca = async (txid) => {
     }
 };
 
+app.get('/verificar-pagamento/:txid', async (req, res) => {
+    try {
+        const { txid } = req.params;
+        const dadosCobranca = await consultarCobranca(txid);
+        
+        // Verifica se o status da cobrança é "CONCLUIDA"
+        if (dadosCobranca.status === 'CONCLUIDA') {
+            return res.json({ status: 'sucesso' });
+        }
+        
+        // Caso o pagamento não esteja concluído
+        return res.json({ status: 'pendente' });
+    } catch (error) {
+        console.error('Erro ao verificar pagamento:', error);
+        return res.status(500).json({ error: 'Erro ao verificar o pagamento.' });
+    }
+});
+
 // Rota para buscar transações por evento
 app.get("/transacoes/:eventId", async (req, res) => {
     const { eventId } = req.params;
