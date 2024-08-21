@@ -232,10 +232,47 @@ export async function getCommercialProfilesByUser(req, res) {
   }
 }
 
-export async function updateUser(req, res) {
-  const userId = req.params.id;
-  const { nome } = req.body;
-}
+try {
+    const userId = req.user._id; // Assumindo que o ID do usuário está no token JWT
+    const {
+      name,
+      celular,
+      cpf,
+      dataNascimento,
+      cep,
+      logradouro,
+      bairro,
+      cidade,
+      uf,
+      numero,
+    } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        name,
+        celular,
+        cpf,
+        dataNascimento,
+        cep,
+        logradouro,
+        bairro,
+        cidade,
+        uf,
+        numero,
+      },
+      { new: true } // Retorna o documento atualizado
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Erro ao atualizar perfil do usuário:", error);
+    res.status(500).json({ message: "Erro ao atualizar perfil do usuário" });
+  }
 
 export const updateUserPermission = async (req, res) => {
   console.log("Atualização de permissão iniciada.");
