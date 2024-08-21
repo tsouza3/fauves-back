@@ -59,8 +59,8 @@ router.post("/register", create);
 router.post("/login", login);
 
 // Rotas de perfil
-router.put("/editprofile", protect(['user', 'admin']), editUserProfile); 
-router.get("/profile", protect(['user', 'admin']), getProfileData);
+router.put("/editprofile", protect(['user', 'admin', 'seller', 'checkin', 'observer']), editUserProfile); 
+router.get("/profile", protect(['user', 'admin', 'seller', 'checkin', 'observer']), getProfileData);
 
 // Rotas de evento
 router.post(
@@ -70,8 +70,8 @@ router.post(
   criarEvento
 );
 
-router.get("/eventos", protect(['user', 'admin']), buscarEventos); // Permissão para listar eventos
-router.get("/eventos/:profileId", protect(['user', 'admin']), buscarEventosPorPerfilComercial);
+router.get("/eventos", protect(['user', 'admin', 'seller', 'checkin', 'observer']), buscarEventos); // Permissão para listar eventos
+router.get("/eventos/:profileId", protect(['user', 'admin', 'seller', 'checkin', 'observer']), buscarEventosPorPerfilComercial);
 
 router.put(
   "/eventos/:eventId",
@@ -79,9 +79,9 @@ router.put(
   editarEvento
 );
 
-router.get("/event/:eventId", protect(['user', 'admin', 'checkin']), getEventById);
+router.get("/event/:eventId", protect(['user', 'admin', 'seller', 'checkin', 'observer']), getEventById);
 
-router.get("/role/:eventId", protect(['user', 'admin']), getUsersByRole);
+router.get("/role/:eventId", protect(['user', 'admin', 'seller', 'checkin', 'observer']), getUsersByRole);
 
 
 router.delete(
@@ -108,9 +108,9 @@ router.post(
   emitirCortesia
 );
 
-router.get("/events", protect(['user, admin']), buscarEventosDoUsuario);
+router.get("/events", protect([['user', 'admin', 'seller', 'checkin', 'observer']]), buscarEventosDoUsuario);
 
-router.get("/listareventos", protect(['user']), listarEventosPorData);
+router.get("/listareventos", protect(['user', 'admin', 'seller', 'checkin', 'observer']), listarEventosPorData);
 
 
 router.get("/profile/:profileId", protect(['user, admin']), getProfileDataByUser);
