@@ -59,7 +59,7 @@ router.post("/register", create);
 router.post("/login", login);
 
 // Rotas de perfil
-router.put("/:id", protect(['user', 'admin']), update); // Permissão para atualizar perfil
+router.put("/editprofile", protect(['user', 'admin']), update); // Permissão para atualizar perfil
 router.get("/profile", protect(['user', 'admin']), getProfileData); // Permissão para acessar perfil
 
 // Rotas de evento
