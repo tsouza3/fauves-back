@@ -102,6 +102,12 @@ router.delete(
   deleteTicket
 );
 
+router.put(
+  "/events/:eventId/tickets/:ticketId",
+  protect(['admin']), // Permissão para deletar tickets
+  updateTicket
+);
+
 router.post(
   "/emitircortesia",
   protect(['admin']), // Permissão para atualizar tickets
