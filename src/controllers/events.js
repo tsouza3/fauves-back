@@ -242,37 +242,30 @@ export const getEventById = async (req, res) => {
   }
 };
 
-export const buscarEventosDoUsuario = async (req, res) => {
+export const getEventsByUser = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(403).json({ error: "Token não fornecido" });
+    const userId = req.user._id; // ID do usuário autenticado
+    const user = await User.findById(userId).populate('permissionCategory.eventId'); // Popula os eventos
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
     }
 
-    const token = authHeader.split(" ")[1];
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decodedToken.id;
+    const events = await Event.find({
+      _id: { $in: user.permissionCategory.map(pc => pc.eventId) } // Filtra eventos baseados nos IDs dos eventos permitidos
+    });
 
-    if (!mongoose.isValidObjectId(userId)) {
-      return res.status(400).json({ error: "ID de usuário inválido" });
-    }
+    // Inclui a função do usuário em relação a cada evento
+    const eventsWithRole = events.map(event => {
+      const permission = user.permissionCategory.find(pc => pc.eventId.equals(event._id));
+      return {
+        ...event.toObject(),
+        role: permission ? permission.role : 'none'
+      };
+    });
 
-    const eventos = await Evento.find({ user: userId }).exec();
-
-    if (!eventos || eventos.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Nenhum evento encontrado para este usuário" });
-    }
-
-    const eventosComId = eventos.map((evento) => ({
-      ...evento.toJSON(),
-      id: evento._id.toString(),
-    }));
-
-    res.status(200).json(eventosComId);
+    res.json(eventsWithRole);
   } catch (error) {
-    console.error("Erro ao buscar eventos do usuário:", error);
-    res.status(500).json({ error: "Erro interno do servidor" });
+    res.status(500).json({ message: error.message });
   }
 };
