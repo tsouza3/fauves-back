@@ -251,7 +251,7 @@ export const getEventsByUser = async (req, res) => {
       return res.status(404).json({ message: 'Usuário não encontrado' });
     }
 
-    const events = await Event.find({
+    const events = await Evento.find({
       _id: { $in: user.permissionCategory.map(pc => pc.eventId) } // Filtra eventos baseados nos IDs dos eventos permitidos
     });
 
