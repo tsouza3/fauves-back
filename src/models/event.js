@@ -6,6 +6,7 @@ const eventoSchema = new mongoose.Schema({
   dataTermino: Date,  // Alterado para Date
   categoria: String,
   localDoEvento: String,
+  description: String,
   producaoEvento: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "CommercialProfile",
