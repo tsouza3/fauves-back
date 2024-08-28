@@ -114,7 +114,7 @@ router.post(
   emitirCortesia
 );
 
-router.get("/events", protect([['user', 'admin', 'seller', 'checkin', 'observer']]), getEventsByUser);
+router.get("/events", protect(['user', 'admin', 'seller', 'checkin', 'observer']), getEventsByUser);
 
 router.get("/listareventos", protect(['user', 'admin', 'seller', 'checkin', 'observer']), listarEventosPorData);
 
