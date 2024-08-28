@@ -128,7 +128,7 @@ app.get('/verificar-pagamento/:txid', async (req, res) => {
 });
 
 // Rota para buscar transações por evento
-app.get("/transacoes/:eventId", protect(['admin']), async (req, res) => {
+app.get("/transacoes/:eventId", protect(['admin', 'observer']), async (req, res) => {
     const { eventId } = req.params;
 
     try {
