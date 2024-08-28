@@ -11,6 +11,7 @@ import User from "./src/models/user.js";
 import Ticket from "./src/models/ticket.js";
 import mongoose from "mongoose";
 import { v4 as uuidv4 } from 'uuid';
+import { protect } from './src/middlewares/auth.js'
 
 
 const app = express();
@@ -127,7 +128,7 @@ app.get('/verificar-pagamento/:txid', async (req, res) => {
 });
 
 // Rota para buscar transações por evento
-app.get("/transacoes/:eventId", async (req, res) => {
+app.get("/transacoes/:eventId", protect(['admin']), async (req, res) => {
     const { eventId } = req.params;
 
     try {
