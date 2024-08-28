@@ -251,16 +251,20 @@ export const getEventsByUser = async (req, res) => {
       return res.status(404).json({ message: 'Usuário não encontrado' });
     }
 
+    // Filtra os eventos com base nos IDs presentes em permissionCategory
     const events = await Evento.find({
-      _id: { $in: user.permissionCategory.map(pc => pc.eventId) } // Filtra eventos baseados nos IDs dos eventos permitidos
+      _id: { $in: user.permissionCategory
+                      .filter(pc => pc.eventId) // Filtra para garantir que eventId existe
+                      .map(pc => pc.eventId) } // Mapeia para obter os eventId
     });
 
     // Inclui a função do usuário em relação a cada evento
     const eventsWithRole = events.map(event => {
-      const permission = user.permissionCategory.find(pc => pc.eventId.equals(event._id));
+      // Encontra o objeto em permissionCategory que corresponde ao eventId atual
+      const permission = user.permissionCategory.find(pc => pc.eventId && pc.eventId.equals(event._id));
       return {
         ...event.toObject(),
-        role: permission ? permission.role : 'none'
+        role: permission ? permission.role : 'none' // Define o papel do usuário em relação ao evento
       };
     });
 
