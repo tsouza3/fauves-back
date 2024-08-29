@@ -131,7 +131,6 @@ export const editarEvento = async (req, res) => {
       dataInicio,
       dataTermino,
       localDoEvento,
-      emailEvento,
       capaEvento: req.file ? req.file.path : "Nenhuma imagem enviada",
     });
 
@@ -139,7 +138,6 @@ export const editarEvento = async (req, res) => {
     evento.dataInicio = dataInicio || evento.dataInicio;
     evento.dataTermino = dataTermino || evento.dataTermino;
     evento.localDoEvento = localDoEvento || evento.localDoEvento;
-    evento.emailEvento = emailEvento || evento.emailEvento;
 
     if (req.file) {
       evento.capaEvento = req.file.path;
