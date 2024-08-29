@@ -73,7 +73,7 @@ router.post(
 router.get("/eventos", protect(['user', 'admin', 'seller', 'checkin', 'observer']), buscarEventos); // Permissão para listar eventos
 router.get("/eventos/:profileId", protect(['user', 'admin', 'seller', 'checkin', 'observer']), buscarEventosPorPerfilComercial);
 
-router.post(
+router.put(
   "/eventos/:eventId",
   protect(['admin']), // Permissão para editar eventos
   editarEvento
