@@ -67,6 +67,22 @@ export const criarEvento = async (req, res) => {
   }
 };
 
+export const buscarEventos = async (req, res) => {
+  try {
+    const eventos = await Evento.find();
+
+    const eventosComId = eventos.map((evento) => ({
+      ...evento.toJSON(),
+      id: evento._id.toString(),
+    }));
+
+    res.status(200).json(eventosComId);
+  } catch (error) {
+    res.status(400).json({ error: "Erro ao buscar eventos" });
+  }
+};
+
+
 
 export const listarEventosPorData = async (req, res) => {
   try {
