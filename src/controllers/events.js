@@ -130,7 +130,6 @@ export const editarEvento = async (req, res) => {
     evento.nomeEvento = nomeEvento || evento.nomeEvento;
     evento.dataInicio = dataInicio || evento.dataInicio;
     evento.dataTermino = dataTermino || evento.dataTermino;
-    evento.categoria = categoria || evento.categoria;
     evento.localDoEvento = localDoEvento || evento.localDoEvento;
     evento.emailEvento = emailEvento || evento.emailEvento;
 
