@@ -125,7 +125,15 @@ export const editarEvento = async (req, res) => {
       return res.status(403).json({ message: "Acesso negado" });
     }
 
-    console.log("Dados do evento antes da atualização:", evento);
+    // Log para verificar os dados recebidos
+    console.log("Dados recebidos no backend:", {
+      nomeEvento,
+      dataInicio,
+      dataTermino,
+      localDoEvento,
+      emailEvento,
+      capaEvento: req.file ? req.file.path : "Nenhuma imagem enviada",
+    });
 
     evento.nomeEvento = nomeEvento || evento.nomeEvento;
     evento.dataInicio = dataInicio || evento.dataInicio;
@@ -137,11 +145,7 @@ export const editarEvento = async (req, res) => {
       evento.capaEvento = req.file.path;
     }
 
-    console.log("Dados do evento após a atualização:", evento);
-
     const eventoAtualizado = await evento.save();
-
-    console.log("Evento atualizado:", eventoAtualizado);
 
     res.status(200).json(eventoAtualizado);
   } catch (error) {
