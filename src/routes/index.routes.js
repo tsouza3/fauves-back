@@ -73,7 +73,7 @@ router.post(
 router.get("/eventos", protect(['user', 'admin', 'seller', 'checkin', 'observer']), buscarEventos); // Permissão para listar eventos
 router.get("/eventos/:profileId", protect(['user', 'admin', 'seller', 'checkin', 'observer']), buscarEventosPorPerfilComercial);
 
-router.put(
+router.post(
   "/eventos/:eventId",
   protect(['admin']), // Permissão para editar eventos
   editarEvento
@@ -102,7 +102,7 @@ router.delete(
   deleteTicket
 );
 
-router.post(
+router.put(
   "/events/:eventId/tickets/:ticketId",
   protect(['admin']), // Permissão para deletar tickets
   updateTicket
