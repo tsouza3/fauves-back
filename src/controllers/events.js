@@ -96,6 +96,7 @@ export const listarEventosPorData = async (req, res) => {
 };
 
 
+
 export const editarEvento = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -103,9 +104,8 @@ export const editarEvento = async (req, res) => {
       nomeEvento,
       dataInicio,
       dataTermino,
-      categoria,
       localDoEvento,
-      emailEvento,
+      description
     } = req.body;
 
     const token = req.headers.authorization?.split(" ")[1];
@@ -131,17 +131,15 @@ export const editarEvento = async (req, res) => {
       dataInicio,
       dataTermino,
       localDoEvento,
-      capaEvento: req.file ? req.file.path : "Nenhuma imagem enviada",
+      description
     });
 
+    // Atualiza apenas os campos que foram fornecidos
     evento.nomeEvento = nomeEvento || evento.nomeEvento;
     evento.dataInicio = dataInicio || evento.dataInicio;
     evento.dataTermino = dataTermino || evento.dataTermino;
     evento.localDoEvento = localDoEvento || evento.localDoEvento;
-
-    if (req.file) {
-      evento.capaEvento = req.file.path;
-    }
+    evento.description = description || evento.description;
 
     const eventoAtualizado = await evento.save();
 
@@ -149,21 +147,6 @@ export const editarEvento = async (req, res) => {
   } catch (error) {
     console.error("Erro ao editar evento:", error);
     res.status(400).json({ error: "Erro ao editar evento" });
-  }
-};
-
-export const buscarEventos = async (req, res) => {
-  try {
-    const eventos = await Evento.find();
-
-    const eventosComId = eventos.map((evento) => ({
-      ...evento.toJSON(),
-      id: evento._id.toString(),
-    }));
-
-    res.status(200).json(eventosComId);
-  } catch (error) {
-    res.status(400).json({ error: "Erro ao buscar eventos" });
   }
 };
 
