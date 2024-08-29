@@ -65,7 +65,7 @@ router.get("/profile", protect(['user', 'admin', 'seller', 'checkin', 'observer'
 // Rotas de evento
 router.post(
   "/eventos",
-  protect(['user', 'admin']), // Permissão para criar eventos
+  protect(['user', 'admin', 'seller', 'observer', 'checkin']), // Permissão para criar eventos
   upload.single("capaEvento"),
   criarEvento
 );
@@ -102,7 +102,7 @@ router.delete(
   deleteTicket
 );
 
-router.put(
+router.post(
   "/events/:eventId/tickets/:ticketId",
   protect(['admin']), // Permissão para deletar tickets
   updateTicket
