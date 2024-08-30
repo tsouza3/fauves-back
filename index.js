@@ -33,9 +33,9 @@ app.options("*", cors());
 const reqGNAlready = GNRequest();
 
 app.post("/pix", async (req, res) => {
-    const { price, eventId, userId, quantidadeTickets, ticketId } = req.body;
+    const { price, eventId, userId, quantidadeTickets, ticketId, devedorNome, devedorCpf, devedorCnpj } = req.body;
 
-    if (!price || !eventId || !userId || quantidadeTickets === undefined || !ticketId) {
+    if (!price || !eventId || !userId || quantidadeTickets === undefined || !ticketId || (!devedorNome || (!devedorCpf && !devedorCnpj))) {
         return res.status(400).json({ error: "Parâmetros obrigatórios não fornecidos" });
     }
 
@@ -46,6 +46,7 @@ app.post("/pix", async (req, res) => {
         valor: { original: price },
         chave: "f63d7a5e-21ba-4b4e-b3ee-55c8612e90c1",
         solicitacaoPagador: "Fauves Brasil",
+        devedor: devedorCpf ? { cpf: devedorCpf, nome: devedorNome } : { cnpj: devedorCnpj, nome: devedorNome },
     };
 
     try {
