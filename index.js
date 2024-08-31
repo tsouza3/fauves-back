@@ -35,6 +35,18 @@ const reqGNAlready = GNRequest();
 app.post("/pix", async (req, res) => {
     const { price, eventId, userId, quantidadeTickets, ticketId, devedorNome, devedorCpf, devedorCnpj } = req.body;
 
+    // Log dos dados recebidos
+    console.log("Dados recebidos para gerar o PIX:", {
+        price,
+        eventId,
+        userId,
+        quantidadeTickets,
+        ticketId,
+        devedorNome,
+        devedorCpf,
+        devedorCnpj
+    });
+
     if (!price || !eventId || !userId || quantidadeTickets === undefined || !ticketId || (!devedorNome || (!devedorCpf && !devedorCnpj))) {
         return res.status(400).json({ error: "Parâmetros obrigatórios não fornecidos" });
     }
@@ -88,7 +100,6 @@ app.post("/pix", async (req, res) => {
         res.status(500).json({ error: "Falha ao gerar a cobrança PIX" });
     }
 });
-
 export const consultarCobranca = async (txid) => {
     try {
         console.log(`Consultando cobrança com TXID: ${txid}`); // Log do TXID
