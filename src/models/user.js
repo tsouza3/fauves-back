@@ -9,7 +9,8 @@ const userSchema = mongoose.Schema({
         data: String, // Base64 ou URL do QR code
         uuid: { type: String, unique: true, required: true }, // UUID gerado e associado a cada QR code
         ticketId: { type: mongoose.Schema.Types.ObjectId, ref: "Ticket" }, // Referência ao ingresso
-        txid: { type: String } // ID da transação PIX
+        txid: { type: String }, // ID da transação PIX
+        eventId: { type: mongoose.Schema.Types.ObjectId, ref: "Evento" } // Referência ao evento
     }],
   commercialProfiles: [{ type: mongoose.Schema.Types.ObjectId, ref: "CommercialProfile" }],
   permissionCategory: [{
