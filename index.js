@@ -179,21 +179,21 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
     const { txid } = req.body.pix[0];
 
     try {
-        // Recuperar os IDs armazenados em app.locals
+        // Recuperar os IDs armazenados em app.locals e converter para ObjectId
         const cobrancaTxid = app.locals.cobrancaTxid;
-        const user_Id = app.locals.user_Id;
-        const event_Id = app.locals.event_Id;
+        const userId = mongoose.Types.ObjectId(app.locals.user_Id); // Conversão para ObjectId
+        const eventId = mongoose.Types.ObjectId(app.locals.event_Id); // Conversão para ObjectId
         const quantidadeIngressos = app.locals.quantidadeIngressos;
-        const ticket_Id = app.locals.ticket_Id;
+        const ticketId = mongoose.Types.ObjectId(app.locals.ticket_Id); // Conversão para ObjectId
 
         console.log('Dados do webhook recebidos:', req.body);
         console.log('Recebido webhook com txid:', txid);
         console.log('Valores armazenados em app.locals:', {
             cobrancaTxid,
-            user_Id,
-            event_Id,
+            userId,
+            eventId,
             quantidadeIngressos,
-            ticket_Id
+            ticketId
         });
 
         if (txid === cobrancaTxid) {
@@ -202,10 +202,10 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                 // Criar QR Codes para cada ingresso
                 for (let j = 0; j < quantidadeIngressos; j++) {
                     const uniqueId = uuidv4();
-                    const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user_Id}/${ticket_Id}/#${uniqueId}`);
+                    const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${eventId}/${userId}/${ticketId}/#${uniqueId}`);
                     
                     // Persistir o QR code, ticketId, txid e eventId no array `QRCode` do usuário
-                    qrCodes.push({ data: qrCodeData, uuid: uniqueId, ticketId: ticket_Id, txid: txid, eventId: event_Id });
+                    qrCodes.push({ data: qrCodeData, uuid: uniqueId, ticketId: ticketId, txid: txid, eventId: eventId });
                     
                     console.log('QR Code gerado com sucesso para ingresso:', j + 1, 'Identificador:', uniqueId);
                 }
@@ -215,7 +215,7 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
             }
 
             // Atualizar usuário com QR Codes
-            const updatedUser = await User.findByIdAndUpdate(user_Id, {
+            const updatedUser = await User.findByIdAndUpdate(userId, {
                 $push: { QRCode: { $each: qrCodes } },
             }, { new: true });
 
@@ -226,7 +226,7 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
 
             // Atualizar ingresso com txid
             const updatedTicket = await Ticket.findByIdAndUpdate(
-                ticket_Id, 
+                ticketId, 
                 { $push: { txid: txid } },
                 { new: true }
             );
