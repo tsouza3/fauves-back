@@ -197,7 +197,10 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                     const uniqueId = uuidv4();
                     // Usar o ticket_Id e o uniqueId para criar a URL do QR Code
                     const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user_Id}/${ticket_Id}/#${uniqueId}`);
-                    qrCodes.push(qrCodeData);
+                    
+                    // Persistir o QR code, ticketId, txid, eventId e o UUID no array `QRCode` do usuário
+                    qrCodes.push({ data: qrCodeData, uuid: uniqueId, ticketId: ticket_Id, txid: txid, eventId: event_Id });
+                    
                     console.log('QR Code gerado com sucesso para ingresso:', j + 1, 'Identificador:', uniqueId);
                 }
             } catch (error) {
@@ -205,13 +208,13 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                 return res.status(500).send('Erro ao gerar QR Codes');
             }
 
-            // Atualizar usuário com QR Codes e txid
+            // Atualizar usuário com QR Codes
             const updatedUser = await User.findByIdAndUpdate(user_Id, {
-                $push: { QRCode: { $each: qrCodes }, txid: txid },
+                $push: { QRCode: { $each: qrCodes } },
             }, { new: true });
 
             if (!updatedUser) {
-                console.log('Erro ao atualizar usuário com QR Codes e txid');
+                console.log('Erro ao atualizar usuário com QR Codes');
                 return res.status(404).send('Usuário não encontrado');
             }
 
@@ -227,7 +230,7 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
                 return res.status(404).send('Ingresso não encontrado');
             }
 
-            console.log('Usuário atualizado com QR Codes e txid:', updatedUser);
+            console.log('Usuário atualizado com QR Codes:', updatedUser);
             console.log('Ingresso atualizado com txid:', updatedTicket);
             console.log('PIX pago');
             res.status(200).send('200');
@@ -238,7 +241,8 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
     } catch (error) {
         console.error('Erro ao processar o webhook:', error);
         res.status(500).send('Erro interno');
-    }});
+    }
+});
 
 app.use("/api/users", routes);
 
