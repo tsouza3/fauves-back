@@ -174,6 +174,7 @@ app.get("/transacoes/:eventId", protect(['admin', 'observer']), async (req, res)
     }
 });
 
+
 app.post('/paymentwebhook(/pix)?', async (req, res) => {
     const { txid } = req.body.pix[0];
 
@@ -185,20 +186,25 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
         const quantidadeIngressos = app.locals.quantidadeIngressos;
         const ticket_Id = app.locals.ticket_Id;
 
+        console.log('Dados do webhook recebidos:', req.body);
         console.log('Recebido webhook com txid:', txid);
-        console.log('Valores atuais de cobrancaTxid, user_Id e event_Id:', cobrancaTxid, user_Id, event_Id, quantidadeIngressos, ticket_Id);
+        console.log('Valores armazenados em app.locals:', {
+            cobrancaTxid,
+            user_Id,
+            event_Id,
+            quantidadeIngressos,
+            ticket_Id
+        });
 
         if (txid === cobrancaTxid) {
             const qrCodes = [];
             try {
-                // Criar QR Codes para cada ingresso, utilizando o ticket_Id específico
+                // Criar QR Codes para cada ingresso
                 for (let j = 0; j < quantidadeIngressos; j++) {
-                    // Gerar um identificador único para cada QR Code
                     const uniqueId = uuidv4();
-                    // Usar o ticket_Id e o uniqueId para criar a URL do QR Code
                     const qrCodeData = await QRCode.toDataURL(`https://fauvesapi.thiagosouzadev.com/event/${event_Id}/${user_Id}/${ticket_Id}/#${uniqueId}`);
                     
-                    // Persistir o QR code, ticketId, txid, eventId e o UUID no array `QRCode` do usuário
+                    // Persistir o QR code, ticketId, txid e eventId no array `QRCode` do usuário
                     qrCodes.push({ data: qrCodeData, uuid: uniqueId, ticketId: ticket_Id, txid: txid, eventId: event_Id });
                     
                     console.log('QR Code gerado com sucesso para ingresso:', j + 1, 'Identificador:', uniqueId);
@@ -243,7 +249,6 @@ app.post('/paymentwebhook(/pix)?', async (req, res) => {
         res.status(500).send('Erro interno');
     }
 });
-
 app.use("/api/users", routes);
 
 const port = process.env.PORT || 3006;
