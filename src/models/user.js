@@ -5,7 +5,10 @@ const userSchema = mongoose.Schema({
   name: { type: String },
   email: { type: String, unique: true, match: /.+\@.+\..+/ },
   password: { type: String },
-  QRCode: [{ type: String }],
+  QRCode: [{
+        data: String, // Base64 ou URL do QR code
+        uuid: { type: String, unique: true, required: true } // UUID gerado e associado a cada QR code
+    }],
   txid: [{ type: String }],
   commercialProfiles: [{ type: mongoose.Schema.Types.ObjectId, ref: "CommercialProfile" }],
   permissionCategory: [{
