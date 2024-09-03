@@ -339,7 +339,7 @@ export const transferTicket = asyncHandler(async (req, res) => {
     }
 
     // Encontre o QRCode do ingresso a ser transferido
-    const ticketQRCode = currentUser.QRCode.find(qr => qr.uuid === uniqueTicketId && qr.ticketId.toString() === ticketId);
+    const ticketQRCode = currentUser.QRCode.find(qr => qr.uuid === uniqueTicketId && qr.ticketId?.toString() === ticketId);
 
     if (!ticketQRCode) {
         res.status(404);
@@ -348,7 +348,7 @@ export const transferTicket = asyncHandler(async (req, res) => {
 
     // Verifique se o ingresso realmente pertence ao usuário atual
     const ticket = await Ticket.findById(ticketId);
-    if (!ticket || ticket.owner.toString() !== currentUser._id.toString()) {
+    if (!ticket || !ticket.owner || ticket.owner.toString() !== currentUser._id.toString()) {
         res.status(403);
         throw new Error('Você não tem permissão para transferir este ingresso');
     }
@@ -374,7 +374,6 @@ export const transferTicket = asyncHandler(async (req, res) => {
 
     res.status(200).json({ message: 'Ingresso transferido com sucesso' });
 });
-
 export const getUsersByRole = async (req, res) => {
   const { eventId } = req.params;
 
