@@ -373,6 +373,7 @@ export const transferTicket = async (req, res) => {
     }
 };
 
+
 export const getUsersByRole = async (req, res) => {
   const { eventId } = req.params;
 
