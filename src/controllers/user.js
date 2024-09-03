@@ -336,22 +336,10 @@ export const transferTicket = async (req, res) => {
             return res.status(404).json({ message: 'Usuário atual não encontrado' });
         }
 
-        // Encontre o QRCode do ingresso a ser transferido
-        const ticketQRCode = currentUser.QRCode.find(qr => qr.uuid === uniqueTicketId && qr.ticketId?.toString() === ticketId);
+        // Verifique se o usuário atual possui o ingresso que está tentando transferir
+        const ticketQRCode = currentUser.QRCode.find(qr => qr.uuid === uniqueTicketId && qr.ticketId.toString() === ticketId);
         if (!ticketQRCode) {
             return res.status(404).json({ message: 'Ingresso não encontrado ou UUID inválido' });
-        }
-
-        // Verifique se o ingresso realmente pertence ao usuário atual
-        const ticket = await Ticket.findById(ticketId);
-        
-        // Log para debug
-        console.log('Ticket:', ticket);
-        console.log('Current User ID:', currentUser._id.toString());
-        console.log('Ticket Owner ID:', ticket.owner.toString());
-
-        if (!ticket || !ticket.owner || ticket.owner.toString() !== currentUser._id.toString()) {
-            return res.status(403).json({ message: 'Você não tem permissão para transferir este ingresso' });
         }
 
         // Remova o QRCode do usuário atual
@@ -369,13 +357,8 @@ export const transferTicket = async (req, res) => {
 
         await recipientUser.save();
 
-        // Transfira a posse do ingresso
-        ticket.owner = recipientUser._id;
-        await ticket.save();
-
         res.status(200).json({ message: 'Ingresso transferido com sucesso' });
     } catch (error) {
-        console.error('Erro ao transferir ingresso:', error); // Adiciona log detalhado de erro
         res.status(500).json({ message: error.message });
     }
 };
