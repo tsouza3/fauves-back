@@ -27,6 +27,7 @@ import {
   deleteTicket,
   updateTicket,
   emitirCortesia,
+  transferTicket
 } from "../controllers/ticket.js";
 import { protect } from "../middlewares/auth.js";
 
@@ -82,6 +83,9 @@ router.put(
 router.get("/event/:eventId", protect(['user', 'admin', 'seller', 'checkin', 'observer']), getEventById);
 
 router.get("/role/:eventId", protect(['user', 'admin', 'seller', 'checkin', 'observer']), getUsersByRole);
+
+router.post("/transfer", protect(['user', 'admin', 'seller', 'checkin', 'observer']), transferTicket);
+
 
 
 router.delete(
