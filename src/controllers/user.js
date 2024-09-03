@@ -344,6 +344,12 @@ export const transferTicket = async (req, res) => {
 
         // Verifique se o ingresso realmente pertence ao usuário atual
         const ticket = await Ticket.findById(ticketId);
+        
+        // Log para debug
+        console.log('Ticket:', ticket);
+        console.log('Current User ID:', currentUser._id.toString());
+        console.log('Ticket Owner ID:', ticket.owner.toString());
+
         if (!ticket || !ticket.owner || ticket.owner.toString() !== currentUser._id.toString()) {
             return res.status(403).json({ message: 'Você não tem permissão para transferir este ingresso' });
         }
@@ -369,10 +375,10 @@ export const transferTicket = async (req, res) => {
 
         res.status(200).json({ message: 'Ingresso transferido com sucesso' });
     } catch (error) {
+        console.error('Erro ao transferir ingresso:', error); // Adiciona log detalhado de erro
         res.status(500).json({ message: error.message });
     }
 };
-
 
 export const getUsersByRole = async (req, res) => {
   const { eventId } = req.params;
