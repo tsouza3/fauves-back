@@ -1,7 +1,6 @@
 import Evento from "../models/event.js";
 import User from "../models/user.js";
 import Ticket from "../models/ticket.js"; // Modelo de ingresso
-import asyncHandler from 'express-async-handler';
 import generateToken from "../utils/generateToken.js";
 import CommercialProfile from "../models/commercialProfile.js";
 import mongoose from 'mongoose'
@@ -321,59 +320,59 @@ export const updateUserPermission = async (req, res) => {
   }
 };
 
-export const transferTicket = asyncHandler(async (req, res) => {
-    const { email, uniqueTicketId, ticketId } = req.body;
+export const transferTicket = async (req, res) => {
+    try {
+        const { email, uniqueTicketId, ticketId } = req.body;
 
-    // Encontre o usuário que receberá o ingresso
-    const recipientUser = await User.findOne({ email });
-    if (!recipientUser) {
-        res.status(404);
-        throw new Error('Usuário destinatário não encontrado');
+        // Encontre o usuário que receberá o ingresso
+        const recipientUser = await User.findOne({ email });
+        if (!recipientUser) {
+            return res.status(404).json({ message: 'Usuário destinatário não encontrado' });
+        }
+
+        // Encontre o usuário que está transferindo o ingresso
+        const currentUser = await User.findById(req.user._id);
+        if (!currentUser) {
+            return res.status(404).json({ message: 'Usuário atual não encontrado' });
+        }
+
+        // Encontre o QRCode do ingresso a ser transferido
+        const ticketQRCode = currentUser.QRCode.find(qr => qr.uuid === uniqueTicketId && qr.ticketId?.toString() === ticketId);
+        if (!ticketQRCode) {
+            return res.status(404).json({ message: 'Ingresso não encontrado ou UUID inválido' });
+        }
+
+        // Verifique se o ingresso realmente pertence ao usuário atual
+        const ticket = await Ticket.findById(ticketId);
+        if (!ticket || !ticket.owner || ticket.owner.toString() !== currentUser._id.toString()) {
+            return res.status(403).json({ message: 'Você não tem permissão para transferir este ingresso' });
+        }
+
+        // Remova o QRCode do usuário atual
+        currentUser.QRCode = currentUser.QRCode.filter(qr => qr.uuid !== uniqueTicketId);
+        await currentUser.save();
+
+        // Adicione o QRCode ao usuário destinatário
+        recipientUser.QRCode.push({
+            data: ticketQRCode.data,
+            uuid: uniqueTicketId,
+            ticketId: ticketId,
+            txid: ticketQRCode.txid,
+            eventId: ticketQRCode.eventId,
+        });
+
+        await recipientUser.save();
+
+        // Transfira a posse do ingresso
+        ticket.owner = recipientUser._id;
+        await ticket.save();
+
+        res.status(200).json({ message: 'Ingresso transferido com sucesso' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
+};
 
-    // Encontre o usuário que está transferindo o ingresso
-    const currentUser = await User.findById(req.user._id);
-    if (!currentUser) {
-        res.status(404);
-        throw new Error('Usuário atual não encontrado');
-    }
-
-    // Encontre o QRCode do ingresso a ser transferido
-    const ticketQRCode = currentUser.QRCode.find(qr => qr.uuid === uniqueTicketId && qr.ticketId?.toString() === ticketId);
-
-    if (!ticketQRCode) {
-        res.status(404);
-        throw new Error('Ingresso não encontrado ou UUID inválido');
-    }
-
-    // Verifique se o ingresso realmente pertence ao usuário atual
-    const ticket = await Ticket.findById(ticketId);
-    if (!ticket || !ticket.owner || ticket.owner.toString() !== currentUser._id.toString()) {
-        res.status(403);
-        throw new Error('Você não tem permissão para transferir este ingresso');
-    }
-
-    // Remova o QRCode do usuário atual
-    currentUser.QRCode = currentUser.QRCode.filter(qr => qr.uuid !== uniqueTicketId);
-    await currentUser.save();
-
-    // Adicione o QRCode ao usuário destinatário
-    recipientUser.QRCode.push({
-        data: ticketQRCode.data,
-        uuid: uniqueTicketId,
-        ticketId: ticketId,
-        txid: ticketQRCode.txid,
-        eventId: ticketQRCode.eventId,
-    });
-
-    await recipientUser.save();
-
-    // Transfira a posse do ingresso
-    ticket.owner = recipientUser._id;
-    await ticket.save();
-
-    res.status(200).json({ message: 'Ingresso transferido com sucesso' });
-});
 export const getUsersByRole = async (req, res) => {
   const { eventId } = req.params;
 
