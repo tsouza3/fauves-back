@@ -9,7 +9,9 @@ import {
   createProductorProfile,
   getProfileDataByUser,
   updateUserPermission,
-  getUsersByRole
+  getUsersByRole,
+  transferTicket
+
 } from "../controllers/user.js";
 import {
   criarEvento,
@@ -27,7 +29,6 @@ import {
   deleteTicket,
   updateTicket,
   emitirCortesia,
-  transferTicket
 } from "../controllers/ticket.js";
 import { protect } from "../middlewares/auth.js";
 
