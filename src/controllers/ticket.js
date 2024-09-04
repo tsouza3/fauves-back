@@ -85,21 +85,17 @@ export const createTicket = async (req, res) => {
 };
 
 
-export const validateQRCode = async (req, res) => {
+port const validateQRCode = async (req, res) => {
   try {
-    // Extrair os parâmetros do corpo da requisição
-    const { uuid, ticketId, eventId, userId } = req.body;
+    const { uuid, ticketId, eventId } = req.body;
+    
+    console.log('Parâmetros recebidos:', { uuid, ticketId, eventId });
 
-    // Log dos parâmetros recebidos
-    console.log('Parâmetros recebidos:', { uuid, ticketId, eventId, userId });
-
-    // Verificar se todos os parâmetros necessários foram enviados
     if (!uuid || !ticketId || !eventId) {
       console.log('Dados insuficientes para validar o QR Code.');
       return res.status(400).json({ message: 'Dados insuficientes para validar o QR Code.' });
     }
 
-    // Procurar o QR Code no banco de dados com base nos parâmetros recebidos
     const user = await User.findOne({
       'QRCode.uuid': uuid,
       'QRCode.ticketId': ticketId,
@@ -110,43 +106,32 @@ export const validateQRCode = async (req, res) => {
       select: 'nome',
     });
 
-    // Log do resultado da consulta ao banco de dados
     console.log('Resultado da consulta ao banco de dados:', user);
 
-    // Verificar se o QR Code foi encontrado
     if (!user) {
       console.log('QR code não encontrado ou inválido.');
       return res.status(404).json({ message: 'QR code não encontrado ou inválido.' });
     }
 
-    // Encontrar o QR Code correspondente no array de QR Codes do usuário
     const qrCode = user.QRCode.find(qr => qr.uuid === uuid);
 
-    // Log do QR Code encontrado
-    console.log('QR Code encontrado:', qrCode);
-
-    // Verificar se o QR Code foi encontrado no array
     if (!qrCode) {
       console.log('QR code não encontrado no array.');
       return res.status(404).json({ message: 'QR code não encontrado.' });
     }
 
-    // Encontrar o ticket correspondente ao QR Code
     const ticket = await Ticket.findById(qrCode.ticketId);
 
-    // Log do ticket encontrado
     console.log('Ticket encontrado:', ticket);
 
-    // Verificar se o ticket foi encontrado
     if (!ticket) {
       console.log('Ticket não encontrado.');
       return res.status(404).json({ message: 'Ticket não encontrado.' });
     }
 
-    // Retornar os dados do ticket
     return res.status(200).json({
-      userName: user.name, // Propriedade `name` deve estar definida no modelo `User`
-      ticketName: ticket.nome, // Propriedade `nome` deve estar definida no modelo `Ticket`
+      userName: user.name,
+      ticketName: ticket.nome,
     });
 
   } catch (error) {
