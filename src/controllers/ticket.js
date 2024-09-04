@@ -87,10 +87,13 @@ export const createTicket = async (req, res) => {
 
 export const validateQRCode = async (req, res) => {
   try {
-    // Extrair os parâmetros da URL do QR code
-    const { uuid, ticketId, eventId, userId } = req.body; // Supondo que esses dados são passados no corpo da requisição
+    const { uuid, ticketId, eventId, userId } = req.body;
 
-    // Verificar se o QR code existe e é válido
+    // Verificar se os parâmetros foram enviados corretamente
+    if (!uuid || !ticketId || !eventId || !userId) {
+      return res.status(400).json({ message: 'Dados insuficientes para validar o QR Code.' });
+    }
+
     const user = await User.findOne({
       _id: userId,
       'QRCode.uuid': uuid,
@@ -106,11 +109,9 @@ export const validateQRCode = async (req, res) => {
       return res.status(404).json({ message: 'QR code não encontrado ou inválido.' });
     }
 
-    // Obter os dados do usuário e do ingresso
     const qrCode = user.QRCode.find(qr => qr.uuid === uuid);
     const ticket = await Ticket.findById(qrCode.ticketId);
 
-    // Retornar os dados do usuário e do ingresso
     return res.status(200).json({
       userName: user.name,
       ticketName: ticket.nome,
