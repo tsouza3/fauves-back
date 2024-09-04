@@ -4,6 +4,7 @@ import path from "path";
 import {
   create,
   login,
+  validateQRCode,
   editUserProfile,
   getProfileData,
   createProductorProfile,
@@ -87,6 +88,7 @@ router.get("/role/:eventId", protect(['user', 'admin', 'seller', 'checkin', 'obs
 
 router.post("/transfer", protect(['user', 'admin', 'seller', 'checkin', 'observer']), transferTicket);
 
+router.post('/validate-qrcode', protect(['admin', 'checkin']), validateQRCode);
 
 
 router.delete(
