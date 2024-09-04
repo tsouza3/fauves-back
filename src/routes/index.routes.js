@@ -4,7 +4,6 @@ import path from "path";
 import {
   create,
   login,
-  validateQRCode,
   editUserProfile,
   getProfileData,
   createProductorProfile,
@@ -30,6 +29,8 @@ import {
   deleteTicket,
   updateTicket,
   emitirCortesia,
+  validateQRCode,
+
 } from "../controllers/ticket.js";
 import { protect } from "../middlewares/auth.js";
 
