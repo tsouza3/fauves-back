@@ -89,7 +89,7 @@ router.get("/role/:eventId", protect(['user', 'admin', 'seller', 'checkin', 'obs
 
 router.post("/transfer", protect(['user', 'admin', 'seller', 'checkin', 'observer']), transferTicket);
 
-router.post('/validate-qrcode', protect(['admin', 'checkin']), validateQRCode);
+router.post('/validate-qr-code', protect(['admin', 'checkin']), validateQRCode);
 
 
 router.delete(
