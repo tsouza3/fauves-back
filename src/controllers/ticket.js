@@ -90,12 +90,11 @@ export const validateQRCode = async (req, res) => {
     const { uuid, ticketId, eventId, userId } = req.body;
 
     // Verificar se os parâmetros foram enviados corretamente
-    if (!uuid || !ticketId || !eventId || !userId) {
+    if (!uuid || !ticketId || !eventId ) {
       return res.status(400).json({ message: 'Dados insuficientes para validar o QR Code.' });
     }
 
     const user = await User.findOne({
-      _id: userId,
       'QRCode.uuid': uuid,
       'QRCode.ticketId': ticketId,
       'QRCode.eventId': eventId,
