@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode'
 
 
+
 export const createTicket = async (req, res) => {
   const {
     nome,
@@ -80,6 +81,44 @@ export const createTicket = async (req, res) => {
   } catch (error) {
     console.error("Erro ao criar o ticket:", error);
     res.status(500).json({ message: "Erro interno do servidor" });
+  }
+};
+
+
+export const validateQRCode = async (req, res) => {
+  try {
+    // Extrair os parâmetros da URL do QR code
+    const { uuid, ticketId, eventId, userId } = req.body; // Supondo que esses dados são passados no corpo da requisição
+
+    // Verificar se o QR code existe e é válido
+    const user = await User.findOne({
+      _id: userId,
+      'QRCode.uuid': uuid,
+      'QRCode.ticketId': ticketId,
+      'QRCode.eventId': eventId,
+    }).populate({
+      path: 'QRCode.ticketId',
+      model: 'Ticket',
+      select: 'nome',
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'QR code não encontrado ou inválido.' });
+    }
+
+    // Obter os dados do usuário e do ingresso
+    const qrCode = user.QRCode.find(qr => qr.uuid === uuid);
+    const ticket = await Ticket.findById(qrCode.ticketId);
+
+    // Retornar os dados do usuário e do ingresso
+    return res.status(200).json({
+      userName: user.name,
+      ticketName: ticket.nome,
+    });
+
+  } catch (error) {
+    console.error('Erro ao validar o QR code:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 export const deleteTicket = async (req, res) => {
