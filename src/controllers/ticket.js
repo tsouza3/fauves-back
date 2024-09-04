@@ -85,7 +85,7 @@ export const createTicket = async (req, res) => {
 };
 
 
-port const validateQRCode = async (req, res) => {
+export const validateQRCode = async (req, res) => {
   try {
     const { uuid, ticketId, eventId } = req.body;
     
@@ -139,6 +139,7 @@ port const validateQRCode = async (req, res) => {
     return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
+
 export const deleteTicket = async (req, res) => {
   const { ticketId, eventId } = req.params;
 
